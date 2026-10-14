@@ -56,8 +56,6 @@ def search_criteria(query, top_k=5):
 
     return results
 
-
-
 def generate_assessment(scene, results):
     """검색된 안전 기준을 근거로 위험성평가 결과를 생성한다."""
 
@@ -71,7 +69,6 @@ def generate_assessment(scene, results):
         default=str,
     )
 
-    # LLM이 반환해야 하는 JSON 구조
     assessment_schema = {
         "type": "object",
         "properties": {
@@ -155,7 +152,6 @@ def generate_assessment(scene, results):
     elapsed = time.perf_counter() - start
     print(f"Qwen 호출 완료: {elapsed:.2f}초", flush=True)
 
-    # 응답을 먼저 확인한 다음 JSON으로 변환한다.
     content = (response.message.content or "").strip()
 
     if not content:
@@ -173,7 +169,6 @@ def generate_assessment(scene, results):
             f"원본 응답: {content!r}"
         ) from e
 
-    # 필수 필드 누락 여부 확인
     missing = [
         key for key in assessment_schema["required"]
         if key not in answer_data
@@ -182,14 +177,12 @@ def generate_assessment(scene, results):
     if missing:
         raise ValueError(f"Qwen 응답에 필수 항목이 없습니다: {missing}")
 
-    # JSON 객체를 사람이 읽기 쉬운 형태로 출력
     answer = "\n".join(
         f"{key}: {answer_data[key]}"
         for key in assessment_schema["required"]
     )
 
     return answer
-
 
 if __name__ == "__main__":
     scene = "일자가 지난 위험성평가서가 다수 배치되어 있다."
