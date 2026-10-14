@@ -57,8 +57,9 @@ def search_criteria(query, top_k=5):
     return results
 
 
+
 def generate_assessment(scene, results):
-    """검색된 안전 기준을 근거로 정해진 형식의 평가 결과를 생성한다."""
+    """검색된 안전 기준을 근거로 위험성평가 결과를 생성한다."""
 
     if not results:
         return "관련 안전 기준을 찾지 못했습니다. 추가 검토가 필요합니다."
@@ -70,29 +71,57 @@ def generate_assessment(scene, results):
         default=str,
     )
 
+    # LLM이 반환해야 하는 JSON 구조
+    assessment_schema = {
+        "type": "object",
+        "properties": {
+            "위험요소": {"type": "string"},
+            "예상 재해유형": {"type": "string"},
+            "위험도": {
+                "type": "string",
+                "enum": ["상", "중", "하", "추가 확인 필요"],
+            },
+            "위험도 판단 근거": {"type": "string"},
+            "위험내용": {"type": "string"},
+            "관련 안전 기준": {"type": "string"},
+            "법적사항": {"type": "string"},
+            "개선대책": {"type": "string"},
+            "안전대책": {"type": "string"},
+            "위험도 평가 시 추가 확인사항": {"type": "string"},
+        },
+        "required": [
+            "위험요소",
+            "예상 재해유형",
+            "위험도",
+            "위험도 판단 근거",
+            "위험내용",
+            "관련 안전 기준",
+            "법적사항",
+            "개선대책",
+            "안전대책",
+            "위험도 평가 시 추가 확인사항",
+        ],
+        "additionalProperties": False,
+    }
+
     system_prompt = """
-        너는 한국어로 산업현장 위험성평가 결과를 작성하는 AI다.
+        너는 한국어로 산업현장 위험성평가를 작성하는 AI다.
 
-        반드시 다음 규칙을 지켜라.
-        1. 최종 답변은 한국어로만 작성한다.
-        2. 문제를 분석하는 과정이나 서론을 출력하지 않는다.
-        3. 지정된 출력 항목과 순서를 반드시 지킨다.
-        4. 검색된 안전 기준에 근거하여 작성한다.
-        5. 근거에 없는 법령, 수치, 사실을 만들어내지 않는다.
-        6. 근거가 부족한 항목은 '추가 확인 필요'라고 작성한다.
-        7. 위험도 평가 기준이 없으면 위험 수준을 임의로 결정하지 않는다.
-        8. 각 항목은 간결하고 구체적으로 작성한다.
+        반드시 지정된 JSON 스키마에 맞는 JSON 객체만 반환한다.
+        JSON 바깥에 설명이나 마크다운을 추가하지 않는다.
 
-        반드시 아래 형식으로만 답변한다.
-
-        위험요소:
-        예상 재해유형:
-        위험내용:
-        관련 안전 기준:
-        법적사항:
-        개선대책:
-        위험도 평가 시 추가 확인사항:
-        """
+        규칙:
+        1. 모든 값은 한국어로 작성한다.
+        2. 검색된 안전 기준과 현장 상황을 근거로 작성한다.
+        3. 개선대책에는 현재 문제를 시정하는 구체적인 조치를 작성한다.
+        4. 안전대책에는 위험 재발을 방지하는 예방 조치를 작성한다.
+        5. 법적사항은 검색된 자료를 참고하되, 관련성이 불확실하면
+        '관련 법령 추가 확인 필요'라고 작성한다.
+        6. 위험도 평가 기준이 제공되지 않았거나 정보가 부족하면
+        위험도를 임의로 확정하지 않고 '추가 확인 필요'로 작성한다.
+        7. 위험도 판단 근거와 추가 확인사항에는 판단에 필요한 정보를 작성한다.
+        8. 검색 자료에 없는 법령, 수치 및 사실을 만들어내지 않는다.
+    """
 
     user_prompt = f"""
         [현장 상황]
@@ -102,38 +131,11 @@ def generate_assessment(scene, results):
         {criteria_text}
 
         위 자료를 바탕으로 위험성평가 결과를 작성하라.
-        위에서 지정한 7개 항목 외에는 출력하지 마라.
-        """
+        모든 필수 필드를 빠짐없이 작성하라.
+    """
 
-    start = time.perf_counter()
     print("Qwen 호출 시작", flush=True)
-
-            
-    assessment_schema = {
-        "type": "object",
-        "properties": {
-            "위험요소": {"type": "string"},
-            "예상 재해유형": {"type": "string"},
-            "위험내용": {"type": "string"},
-            "관련 안전 기준": {"type": "string"},
-            "법적사항": {"type": "string"},
-            "개선대책": {"type": "string"},
-            "위험도 평가 시 추가 확인사항": {"type": "string"},
-        },
-        "required": [
-            "위험요소",
-            "예상 재해유형",
-            "위험내용",
-            "관련 안전 기준",
-            "법적사항",
-            "개선대책",
-            "위험도 평가 시 추가 확인사항",
-        ],
-        "additionalProperties": False,
-    }
-
     start = time.perf_counter()
-    print("Qwen 호출 시작", flush=True)
 
     response = ollama.chat(
         model="qwen3:4b",
@@ -146,23 +148,48 @@ def generate_assessment(scene, results):
         stream=False,
         options={
             "temperature": 0,
-            "num_predict": 400,
+            "num_predict": 600,
         },
     )
 
-    print(
-        f"Qwen 호출 완료: {time.perf_counter() - start:.2f}초",
-        flush=True,
-    )
+    elapsed = time.perf_counter() - start
+    print(f"Qwen 호출 완료: {elapsed:.2f}초", flush=True)
 
-    answer_data = json.loads(response.message.content)
+    # 응답을 먼저 확인한 다음 JSON으로 변환한다.
+    content = (response.message.content or "").strip()
 
+    if not content:
+        thinking = getattr(response.message, "thinking", None) or ""
+        raise RuntimeError(
+            "Qwen이 빈 응답을 반환했습니다.\n"
+            f"Thinking 내용: {thinking!r}"
+        )
+
+    try:
+        answer_data = json.loads(content)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            "Qwen 응답이 올바른 JSON 형식이 아닙니다.\n"
+            f"원본 응답: {content!r}"
+        ) from e
+
+    # 필수 필드 누락 여부 확인
+    missing = [
+        key for key in assessment_schema["required"]
+        if key not in answer_data
+    ]
+
+    if missing:
+        raise ValueError(f"Qwen 응답에 필수 항목이 없습니다: {missing}")
+
+    # JSON 객체를 사람이 읽기 쉬운 형태로 출력
     answer = "\n".join(
         f"{key}: {answer_data[key]}"
         for key in assessment_schema["required"]
     )
 
     return answer
+
 
 if __name__ == "__main__":
     scene = "일자가 지난 위험성평가서가 다수 배치되어 있다."
