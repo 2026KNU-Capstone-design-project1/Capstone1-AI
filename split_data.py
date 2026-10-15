@@ -3,13 +3,15 @@ import shutil
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+
+# 각자 OneDrive에서 받은 폴더를 이 파일과 같은 위치에 두세요.
 PHOTO_DIR = HERE / "dataset_photo"
 VIDEO_DIR = HERE / "dataset_video"
 OUTPUT_DIR = HERE / "dataset"
 
 TRAIN_RATIO = 0.70
-VAL_RATIO = 0.15 
-SEED = 42 
+VAL_RATIO = 0.15
+SEED = 42
 
 PHOTO_EXTS = {".jpg", ".jpeg", ".png"}
 VIDEO_EXTS = {".mp4", ".mov", ".avi"}
@@ -17,7 +19,8 @@ VIDEO_EXTS = {".mp4", ".mov", ".avi"}
 
 def list_files(folder, exts):
     return sorted(p for p in folder.iterdir()
-                  if p.is_file() and p.suffix.lower() in exts)
+                  if p.is_file() and not p.name.startswith(".")
+                  and p.suffix.lower() in exts)
 
 
 def split(files):
@@ -33,6 +36,11 @@ def split(files):
 
 
 def main():
+    for folder in (PHOTO_DIR, VIDEO_DIR):
+        if not folder.is_dir():
+            print(f"{folder.name} 폴더가 없어요. OneDrive에서 받아서 {HERE} 안에 넣어 주세요.")
+            return
+
     random.seed(SEED)
     photos = list_files(PHOTO_DIR, PHOTO_EXTS)
     videos = list_files(VIDEO_DIR, VIDEO_EXTS)
@@ -43,7 +51,7 @@ def main():
             target = OUTPUT_DIR / split_name
             target.mkdir(parents=True, exist_ok=True)
             for f in group:
-                shutil.copy2(f, target / f.name) 
+                shutil.copy2(f, target / f.name)
 
     for split_name in ("training", "validation", "test"):
         folder = OUTPUT_DIR / split_name
