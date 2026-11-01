@@ -1,0 +1,9 @@
+test_id,hazard_type,edge_detected,visibility,guardrail_present,guardrail_continuous,guardrail_protects_edge,alternative_protection,opening_detected,cover_present,protection_complete,platform_present,gap_detected,fastening_confirmed,violation_suspected,expected_status
+I001,guardrail,true,clear,true,true,true,false,,,,,,,,false,관측상 정상
+I002,guardrail,true,clear,false,false,false,false,,,,,,,,false,위반
+I003,opening,,,,,,,,true,false,false,,,,false,위반
+I004,opening,,,,,,,,true,true,false,,,,false,위반
+I005,opening,,,,,,,,true,true,, , , ,false,미확인
+I006,work_platform,,,,,,,,,,,true,true,true,false,관측상 정상
+I007,work_platform,,,,,,,,,,,false,false,false,false,위반
+I008,work_platform,,,,,,,,,,,true,true,,false,미확인
