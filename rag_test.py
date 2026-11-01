@@ -86,11 +86,13 @@ def search_criteria(query, top_k=5, method="char"):
     return results
 
 def generate_assessment(scene, results, return_json=False):
-    """검색된 안전 기준을 근거로 위험성평가 결과를 생성한다."""
-
+    """규칙 판정 딕셔너리를 근거로 위험성평가 결과를 생성한다."""
+    if not isinstance(results, dict):
+        raise TypeError("results는 규칙 판정 결과 딕셔너리여야 합니다.")
     if not results:
-        return "관련 안전 기준을 찾지 못했습니다. 추가 검토가 필요합니다."
+        return "규칙 판정 결과가 없습니다. 추가 검토가 필요합니다."
 
+    scene_text = json.dumps(scene, ensure_ascii=False, indent=2, default=str)
     criteria_text = json.dumps(
         results,
         ensure_ascii=False,
@@ -138,25 +140,31 @@ def generate_assessment(scene, results, return_json=False):
 
         규칙:
         1. 모든 값은 한국어로 작성한다.
-        2. 검색된 안전 기준과 현장 상황을 근거로 작성한다.
-        3. 개선대책에는 현재 문제를 시정하는 구체적인 조치를 작성한다.
-        4. 안전대책에는 위험 재발을 방지하는 예방 조치를 작성한다.
-        5. 법적사항은 검색된 자료를 참고하되, 관련성이 불확실하면
-        '관련 법령 추가 확인 필요'라고 작성한다.
-        6. 위험도 평가 기준이 제공되지 않았거나 정보가 부족하면
-        위험도를 임의로 확정하지 않고 '추가 확인 필요'로 작성한다.
-        7. 위험도 판단 근거와 추가 확인사항에는 판단에 필요한 정보를 작성한다.
-        8. 검색 자료에 없는 법령, 수치 및 사실을 만들어내지 않는다.
+        2. 입력된 현장 영상 객체 탐지 정보와 규칙 판정 결과만 근거로 사용한다.
+        3. rule_id, hazard, violation_status, reason 등은 규칙 판정의 결과이며
+           텍스트 검색 결과나 유사도 점수가 아니다.
+        4. 규칙 판정의 위반 여부를 임의로 변경하지 않는다.
+        5. 개선대책에는 현재 문제를 시정하는 구체적인 조치를 작성하고,
+           안전대책에는 재발 방지를 위한 예방 조치를 작성한다.
+        6. 법적사항에 확인된 조항이 없다면 '관련 법령 추가 확인 필요'로 작성한다.
+           확인되지 않은 법령이나 조항을 만들어내지 않는다.
+        7. likelihood, severity, risk_score 중 하나라도 null이거나,
+           risk_level이 '미확정'이면 위험도는 '추가 확인 필요'로 작성한다.
+           점수와 위험도 등급을 임의로 계산하거나 보완하지 않는다.
+        8. 위험도 판단 근거와 추가 확인사항에는 확인된 사실과 부족한 정보를 구분한다.
+        9. 입력에 없는 사실, 수치, 법령 및 객체 상태를 만들어내지 않는다.
+        10. 규칙 판정 결과의 위반 여부와 위험도 평가의 확정 여부는 구분한다.
     """
 
     user_prompt = f"""
-        [현장 상황]
-        {scene}
+        [현장 영상 객체 탐지 정보]
+        {scene_text}
 
-        [검색된 안전 기준]
+        [규칙 기반 위험 판정 결과]
         {criteria_text}
 
-        위 자료를 바탕으로 위험성평가 결과를 작성하라.
+        위 입력을 바탕으로 위험성평가 결과를 작성하라.
+        규칙 판정 결과를 텍스트 검색 결과로 취급하지 마라.
         모든 필수 필드를 빠짐없이 작성하라.
     """
 
@@ -251,16 +259,9 @@ if __name__ == "__main__":
     }
 
     print(f"전체 기준 수: {len(df)}")
-    print(f"검색 결과 수: {len(results)}")
-
-    for i, item in enumerate(results, start=1):
-        print(f"\n===== 검색 결과 {i} =====")
-        print(f"유사도: {item['유사도']}")
-
-        for col in search_colums:
-            print(f"{col}: {item[col]}")
+    print("\n===== 규칙 기반 위험 판정 결과 =====")
+    print(json.dumps(results, ensure_ascii=False, indent=2))
 
     print("\n===== Qwen 위험성평가 결과 =====")
-
     assessment = generate_assessment(scene, results)
     print(assessment)
