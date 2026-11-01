@@ -18,30 +18,59 @@ search_colums = [
 ]
 
 missing = [col for col in search_colums if col not in df.columns]
+
 if missing:
     raise ValueError(f"csv에 없는 column: {missing}")
 
 df[search_colums] = df[search_colums].fillna("").astype(str)
-documents = df[search_colums].agg(" ".join, axis=1).tolist()
 
-vectorizer = TfidfVectorizer(
+documents = (
+    df[search_colums]
+    .agg(" ".join, axis=1)
+    .tolist()
+)
+
+char_vectorizer = TfidfVectorizer(
     analyzer="char",
     ngram_range=(2, 4),
 )
 
-document_vectors = vectorizer.fit_transform(documents)
+word_vectorizer = TfidfVectorizer(
+    analyzer="word",
+    ngram_range=(1, 2),
+    token_pattern=r"(?u)\b\w+\b",
+)
 
-def search_criteria(query, top_k=5):
-    """현장 상황과 관련 있는 기준을 상위 top_k개 검색한다."""
-    query_vector = vectorizer.transform([query])
+char_document_vectors = char_vectorizer.fit_transform(documents)
+word_document_vectors = word_vectorizer.fit_transform(documents)
+
+def search_criteria(query, top_k=5, method="char"):
+    """검색 방식에 따라 현장 상황과 관련 있는 기준을 검색한다."""
+
+    if method == "char":
+        selected_vectorizer = char_vectorizer
+        selected_document_vectors = char_document_vectors
+
+    elif method == "word":
+        selected_vectorizer = word_vectorizer
+        selected_document_vectors = word_document_vectors
+
+    else:
+        raise ValueError(
+            "method는 'char' 또는 'word'만 사용할 수 있습니다."
+        )
+
+    query_vector = selected_vectorizer.transform([query])
 
     scores = cosine_similarity(
-        query_vector, document_vectors
+        query_vector,
+        selected_document_vectors
     ).flatten()
 
     top_indices = scores.argsort()[::-1][:top_k]
 
     results = []
+
     for idx in top_indices:
         if scores[idx] <= 0.1:
             continue
@@ -56,7 +85,7 @@ def search_criteria(query, top_k=5):
 
     return results
 
-def generate_assessment(scene, results):
+def generate_assessment(scene, results, return_json=False):
     """검색된 안전 기준을 근거로 위험성평가 결과를 생성한다."""
 
     if not results:
@@ -176,6 +205,9 @@ def generate_assessment(scene, results):
 
     if missing:
         raise ValueError(f"Qwen 응답에 필수 항목이 없습니다: {missing}")
+
+    if return_json:
+        return answer_data
 
     answer = "\n".join(
         f"{key}: {answer_data[key]}"
