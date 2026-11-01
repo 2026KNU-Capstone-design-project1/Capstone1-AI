@@ -56,7 +56,7 @@ def search_criteria(query, top_k=5):
 
     return results
 
-def generate_assessment(scene, results):
+def generate_assessment(scene, results, return_json=False):
     """검색된 안전 기준을 근거로 위험성평가 결과를 생성한다."""
 
     if not results:
@@ -161,6 +161,9 @@ def generate_assessment(scene, results):
             f"Thinking 내용: {thinking!r}"
         )
 
+    validation = False
+    validation_message = ""
+    
     try:
         answer_data = json.loads(content)
     except json.JSONDecodeError as e:
@@ -176,6 +179,9 @@ def generate_assessment(scene, results):
 
     if missing:
         raise ValueError(f"Qwen 응답에 필수 항목이 없습니다: {missing}")
+
+    if return_json:
+        return answer_data
 
     answer = "\n".join(
         f"{key}: {answer_data[key]}"
