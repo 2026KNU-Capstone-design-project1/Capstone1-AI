@@ -1,5 +1,3 @@
-# rule_engine.py
-
 def evaluate_guardrail(scene):
     """
     안전난간 위험 판정 함수
