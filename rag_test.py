@@ -174,7 +174,7 @@ def generate_assessment(scene, results, return_json=False):
         stream=False,
         options={
             "temperature": 0,
-            "num_predict": 600,
+            "num_predict": 1200,
         },
     )
 
@@ -217,9 +217,38 @@ def generate_assessment(scene, results, return_json=False):
     return answer
 
 if __name__ == "__main__":
-    scene = "일자가 지난 위험성평가서가 다수 배치되어 있다."
+    scene = {
+        "detected_objects": [
+            {
+                "class": "guardrail",
+                "confidence": 0.91,
+                "bbox": [100, 120, 300, 250]
+            },
+            {
+                "class": "worker",
+                "confidence": 0.95,
+                "bbox": [220, 180, 280, 350]
+            },
+            {
+                "class": "edge",
+                "confidence": 0.88,
+                "bbox": [80, 100, 400, 120]
+            }
+        ],
+        "visibility": "clear"
+    }
 
-    results = search_criteria(scene)
+    results = {
+        "rule_id": "F-01",
+        "hazard": "안전난간",
+        "violation_status": "위반",
+        "reason": "추락 위험 단부의 방호조치 미실시",
+        "likelihood": None,
+        "severity": None,
+        "risk_score": None,
+        "risk_level": "미확정",
+        "review_required": True
+    }
 
     print(f"전체 기준 수: {len(df)}")
     print(f"검색 결과 수: {len(results)}")
