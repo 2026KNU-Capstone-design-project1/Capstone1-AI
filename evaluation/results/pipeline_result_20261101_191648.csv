@@ -1,0 +1,13 @@
+﻿test_name,hazard_type,expected_status,actual_status,expected_level,actual_level,risk_score,reason,review_required,result
+안전난간 위반,guardrail,위반,위반,상,상,9,추락 위험 단부의 방호조치 미실시,False,통과
+안전난간 정상,guardrail,관측상 정상,관측상 정상,평가 제외,평가 제외,,관측 구간에서 안전난간의 보호 상태 확인,False,통과
+안전난간 위반 의심,guardrail,위반 의심,위반 의심,미확정,미확정,,추락 위험 단부의 방호조치 미실시가 의심되나 추가 확인 필요,True,통과
+안전난간 미확인,guardrail,미확인,미확인,미확정,미확정,,영상의 가림 또는 관측 범위 부족,True,통과
+개구부 위반,opening,위반,위반,상,상,9,개구부에 덮개 또는 안전난간 등 방호조치가 확인되지 않음,False,통과
+개구부 정상,opening,관측상 정상,관측상 정상,평가 제외,평가 제외,,개구부 방호시설의 보호 범위가 확보된 것으로 관측됨,False,통과
+개구부 위반 의심,opening,위반 의심,위반 의심,미확정,미확정,,개구부 방호조치 미실시가 의심되나 추가 확인 필요,True,통과
+개구부 미확인,opening,미확인,미확인,미확정,미확정,,개구부 또는 방호시설이 가려져 확인 불가,True,통과
+작업발판 위반,work_platform,위반,위반,상,상,9,작업발판 미설치,False,통과
+작업발판 정상,work_platform,관측상 정상,관측상 정상,평가 제외,평가 제외,,작업발판의 설치 상태와 고정 상태가 확인됨,False,통과
+작업발판 위반 의심,work_platform,위반 의심,위반 의심,미확정,미확정,,작업발판 미설치가 의심되나 추가 확인 필요,True,통과
+작업발판 미확인,work_platform,미확인,미확인,미확정,미확정,,영상의 가림 또는 관측 범위 부족,True,통과

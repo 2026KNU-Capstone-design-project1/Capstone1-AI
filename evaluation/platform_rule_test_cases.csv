@@ -1,0 +1,9 @@
+test_id,visibility,platform_present,gap_detected,fastening_confirmed,violation_suspected,expected_status
+P001,clear,true,false,true,false,관측상 정상
+P002,clear,false,false,false,false,위반
+P003,clear,true,true,true,false,위반
+P004,clear,true,true,true,true,위반 의심
+P005,clear,true,false,,false,미확인
+P006,partial,true,false,,false,미확인
+P007,clear,true,false,false,false,위반
+P008,clear,true,,true,false,미확인

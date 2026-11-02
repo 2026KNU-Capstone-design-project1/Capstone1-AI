@@ -1,0 +1,7 @@
+test_id,edge_detected,visibility,guardrail_present,guardrail_continuous,guardrail_protects_edge,alternative_protection,violation_suspected,expected_status
+F001,true,clear,true,true,true,false,false,관측상 정상
+F002,true,clear,false,false,false,false,false,위반
+F003,true,clear,true,false,true,false,false,위반
+F004,true,clear,true,true,false,false,false,위반
+F005,true,partial,,, ,false,false,미확인
+F006,true,clear,true,false,true,false,true,위반 의심
