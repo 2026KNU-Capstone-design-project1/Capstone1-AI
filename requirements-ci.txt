@@ -1,2 +1,6 @@
-
 pytest
+fastapi
+httpx
+pandas
+scikit-learn
+ollama
