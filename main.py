@@ -5,14 +5,16 @@ from pydantic import BaseModel, Field
 
 from rag_test import search_criteria, generate_assessment
 from risk_pipeline import evaluate_hazard_risk
+from report_aggregator import aggregate_assessments
+from full_report_builder import build_full_report
+from summary_narrative import build_verified_narrative
+from schemas import RiskAssessmentItem
 
 app = FastAPI(
     title="Construction Risk Assessment AI",
     description="건설현장 위험성평가 AI API",
     version="1.0.0",
 )
-
-
 class Detection(BaseModel):
     hazard: str
     location: str | None = None
@@ -44,6 +46,18 @@ class AssessmentRequest(BaseModel):
     work_info: dict | None = None
     source: SourceInfo
     detections: list[Detection]
+
+class SummaryReportRequest(BaseModel):
+    report_id: str
+    site_info: dict | None = None
+    assessments: list[RiskAssessmentItem]
+
+
+class FullReportRequest(BaseModel):
+    report_id: str
+    site_info: dict | None = None
+    report_period: str | None = None
+    assessments: list[RiskAssessmentItem]
 
 @app.get("/health")
 def health():
@@ -128,12 +142,13 @@ def assess(payload: AssessmentRequest):
         if not search_results:
             assessments.append({
                 "hazard": detection.hazard,
-                "violation_status": "미확인",
-                "risk_level": "미확정",
-                "report": None,
-                "message": "관련 안전 기준 검색 결과 없음"
+                "violation_status": ...,
+                "risk_level": ...,
+                "rule_result": rule_result,
+                "risk_assessment": risk_result,
+                "retrieved_criteria_count": len(search_results),
+                "report": report,
             })
-            continue
 
         scene = {
             "site_info": payload.site_info,
@@ -155,8 +170,6 @@ def assess(payload: AssessmentRequest):
             return_json=True
         )
 
-        
-        # 규칙 엔진의 위험도를 최종 보고서에 우선 반영
         if risk_result is not None:
             risk_level = risk_result.get("risk_level")
 
@@ -165,7 +178,6 @@ def assess(payload: AssessmentRequest):
             else:
                 report["위험도"] = "추가 확인 필요"
 
-        # 위반 여부가 확정되지 않은 경우 단정적인 보고서 방지
         violation_status = (
             rule_result.get("violation_status")
             if rule_result is not None
@@ -196,27 +208,79 @@ def assess(payload: AssessmentRequest):
                 "작업자 접근 상태 및 실제 작업 조건"
             )
 
-        
-        assessments.append({
-            "hazard": detection.hazard,
-            "violation_status": (
+        item = RiskAssessmentItem(
+            risk_id=None, 
+            hazard=detection.hazard,
+            hazard_type=detection.hazard_type,
+            location=detection.location,
+            area=(
+                payload.work_info.get("location")
+                if payload.work_info
+                else None
+            ),
+            work_name=(
+                payload.work_info.get("work_name")
+                if payload.work_info
+                else None
+            ),
+            image_url=payload.source.image_url,
+            bbox=detection.bbox,
+            confidence=detection.confidence,
+            violation_status=(
                 rule_result["violation_status"]
                 if rule_result is not None
                 else "미확인"
             ),
-            "risk_level": (
+            risk_level=(
                 risk_result["risk_level"]
                 if risk_result is not None
                 else "미확정"
             ),
-            "rule_result": rule_result,
-            "risk_assessment": risk_result,
-            "retrieved_criteria_count": len(search_results),
-            "report": report,
-        })
+            rule_result=rule_result,
+            risk_assessment=risk_result,
+            report=report,
+            action_status=None,  # BE에서 관리
+            first_detected_at=None,  # BE에서 관리
+        )
+
+        assessments.append(item.model_dump())
 
     return {
         "assessment_id": payload.assessment_id,
         "source": payload.source.model_dump(),
         "assessments": assessments
     }
+
+@app.post("/reports/summary")
+def create_summary_report(payload: SummaryReportRequest):
+    aggregated = aggregate_assessments(
+        [item.model_dump() for item in payload.assessments]
+    )
+    
+    return {
+        "report_id": payload.report_id,
+        "site_info": payload.site_info,
+        "summary": aggregated["summary"],
+        "risk_distribution": aggregated["risk_distribution"],
+        "violation_distribution": aggregated["violation_distribution"],
+        "top_hazards": aggregated["top_hazards"],
+        "priority_actions": aggregated["priority_actions"],
+    }
+
+
+@app.post("/reports/full")
+def create_full_report(payload: FullReportRequest):
+    full_report = build_full_report(
+        report_id=payload.report_id,
+        site_info=payload.site_info,
+        assessments=[
+            item.model_dump() for item in payload.assessments
+        ],
+        report_period=payload.report_period,
+    )
+
+    narrative = build_verified_narrative(full_report)
+
+    full_report["narrative"] = narrative
+
+    return full_report
