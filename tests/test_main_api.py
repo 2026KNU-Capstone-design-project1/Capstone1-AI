@@ -100,8 +100,9 @@ def test_assess_multiple_hazards(monkeypatch):
     assert assessments[1]["risk_level"] == "미확정"
     assert assessments[1]["report"]["위험도"] == "추가 확인 필요"
 
-    assert "미설치 또는 불량이 확인되면" in (
+    assert (
         assessments[1]["report"]["개선대책"]
+        == "테스트 개선대책"
     )
 
 

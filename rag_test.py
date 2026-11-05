@@ -33,11 +33,34 @@ if missing:
 
 df[search_columns] = df[search_columns].fillna("").astype(str)
 
-documents = (
-    df[search_columns]
-    .agg(" ".join, axis=1)
-    .tolist()
-)
+search_weights = {
+    "대분류": 2,
+    "위험요소": 5,
+    "판단항목": 5,
+    "정상": 2,
+    "위반": 2,
+    "예상 위험": 2,
+    "개선내용": 1,
+    "안전대책": 1,
+    "법적사항": 1,
+}
+
+def build_weighted_document(row):
+    parts = []
+
+    for column, weight in search_weights.items():
+        value = row[column].strip()
+
+        if value:
+            parts.extend([value] * weight)
+
+    return " ".join(parts)
+
+
+documents = df.apply(
+    build_weighted_document,
+    axis=1
+).tolist()
 
 char_vectorizer = TfidfVectorizer(
     analyzer="char",
@@ -91,6 +114,32 @@ def search_criteria(query, top_k=5, method="char"):
             "유사도": round(float(scores[idx]), 4),
             **{col: row[col] for col in search_columns},
         })
+
+    return results
+
+def search_hazard_knowledge(
+    hazard_code: str,
+) -> list[dict]:
+    """위험 코드에 정확히 일치하는 참고 지식을 검색한다.
+
+    검증되지 않은 초안은 원본 검증 상태를 유지한다.
+    """
+
+    knowledge_path = BASE_DIR / "data" / "hazard_knowledge.json"
+
+    with knowledge_path.open(
+        encoding="utf-8"
+    ) as f:
+        knowledge = json.load(f)
+
+    results = []
+
+    for item in knowledge.get("items", []):
+        if item.get("hazard_code") == hazard_code:
+            results.append({
+                **item,
+                "retrieval_method": "hazard_code_exact",
+            })
 
     return results
 
@@ -224,6 +273,88 @@ def generate_assessment(scene, results, return_json=False):
         확인된 사실과 부족한 정보를 구분한다.
     12. 입력에 없는 사실, 수치, 법령 및 객체 상태를 만들어내지 않는다.
     13. 규칙 판정 결과의 위반 여부와 위험도 평가의 확정 여부는 구분한다.
+        14. evidence_context가 제공되면 이를 관측 근거로 활용한다.
+    15. evidence_status가 'matched'이면 YOLO와 공간관계 규칙이
+        동일 위험 후보를 제시한 것으로 설명한다.
+        실제 위반이 확정되었다고 표현하지 않는다.
+    16. evidence_status가 'detection_only'이면 YOLO 단독 위험 후보이며,
+        공간관계 규칙의 확인 근거가 없다고 설명한다.
+        공간관계 규칙이 위험을 부정했다고 단정하지 않는다.
+    17. evidence_status가 'spatial_only'이면 공간관계 규칙 단독
+        위험 후보로 설명한다. YOLO가 안전하다고 판단했다고 쓰지 않는다.
+    18. evidence_status가 'undetermined'이면 공간관계 규칙에서
+        판단할 수 없었던 위험 후보로 설명하고 추가 확인을 요청한다.
+    19. spatial_findings의 status가 '위험'이어도 이는 위험 후보이며,
+        실제 법령 위반이나 위험도 등급의 확정 근거가 아니다.
+    20. spatial_findings가 비어 있으면 정상 상태로 해석하지 않는다.
+        규칙 미지원, 조건 불충족, 객체 미탐지 중 어떤 원인인지
+        제공되지 않았다면 임의로 결정하지 않는다.
+    21. related_objects와 related_relations에 있는 객체명,
+        관계 유형, 수치는 실제 제공된 내용만 사용한다.
+    22. gap은 화면 대각선 기준의 정규화된 거리다.
+        실제 거리(m)로 변환하거나 법적 이격거리 충족 여부를 판단하지 않는다.
+    23. IoU와 객체 포함 비율은 바운딩박스의 기하학적 관계이며,
+        실제 물리적 접촉이나 인양 작업 상태의 확정 근거가 아니다.
+    24. 객체 탐지 confidence를 위반 확률이나 위험 발생 확률로
+        해석하지 않는다.
+        25. evidence_context의 evaluation_status와 reason_code를
+        공간관계 규칙의 평가 상태 및 판단 원인으로 해석한다.
+        이 값은 실제 법령 위반 여부나 L×S 위험등급을 의미하지 않는다.
+
+    26. reason_code가 'rule_matched'이면
+        공간관계 규칙에서 위험 후보 조건이 충족되었다고 설명한다.
+        agrees_with_model이 true이면 YOLO 위험 후보와
+        공간관계 규칙의 판단이 일치했다고 설명한다.
+        실제 위반이 확정되었다고 표현하지 않는다.
+
+    27. reason_code가 'rule_not_supported'이면
+        해당 위험요소의 공간관계 판단 규칙이 지원되지 않아
+        규칙 기반 평가를 수행할 수 없었다고 설명한다.
+        위험이 없거나 정상이라고 판단하지 않는다.
+
+    28. evaluation_status가 'not_evaluable'이면
+        공간관계 규칙 평가가 불가능하거나 보류된 상태로 설명한다.
+        구체적인 원인은 제공된 reason_code를 따른다.
+
+    29. checks에 포함된 각 규칙의 status와 reason_code를 확인한다.
+        프레임 전체의 evaluation_status만 보고 모든 위험요소가
+        같은 상태라고 판단하지 않는다.
+
+    30. findings가 비어 있더라도 정상 상태라고 단정하지 않는다.
+        reason_code가 제공되었다면 해당 원인을 우선 설명한다.
+
+    31. 위험내용에는 현재 detection.hazard와 관측된 객체,
+        공간관계를 우선 반영한다.
+        RAG 검색 결과의 유사 사례를 현재 영상에서 관측된
+        사실처럼 작성하지 않는다.
+
+    32. 개선대책과 추가 확인사항은 현재 위험 후보에 맞게 작성한다.
+        규칙 미지원이나 근거 부족 상태에서는
+        실제 위험 여부를 확인하기 위한 점검사항을 구체적으로 제시한다.
+    33. 검색 결과의 verification_status가 'unverified'이면
+        해당 자료는 검증되지 않은 안전조치 참고 초안이다.
+        검증된 법적 의무, 공식 안전기준 또는 확정된 규정으로 표현하지 않는다.
+
+    34. unverified 자료의 legal_basis가 null이면
+        법적사항은 반드시 '관련 법령 추가 확인 필요'로 작성한다.
+        다른 위험유형의 법령을 대신 가져오지 않는다.
+
+    35. 위험내용은 검색된 유사 사례보다
+        현재 detection.hazard와 evidence_context를 우선하여 작성한다.
+        RAG 자료의 개선내용을 영상에서 실제 관측한 사실로 작성하지 않는다.
+
+    36. evidence_context에 related_objects가 있으면
+        해당 객체 이름을 위험내용에 반영한다.
+        related_relations가 있으면 실제 관측된 공간관계 유형을 설명한다.
+        단, 바운딩박스의 포함·중첩만으로 실제 인양이나 접촉을 확정하지 않는다.
+
+    37. 개선대책은 현재 위험 후보에 해당하는
+        RAG 자료의 improvement를 참고하여 작성한다.
+        위험 상태가 미확인이면 필요한 확인과 조건부 시정조치를 구분한다.
+
+    38. 위험도 평가 시 추가 확인사항은
+        해당 위험 코드의 additional_checks를 우선 참고한다.
+        일반적인 방호시설 점검사항으로 대체하지 않는다.
     """
 
     user_prompt = f"""
