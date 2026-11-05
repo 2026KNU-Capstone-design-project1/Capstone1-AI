@@ -1,10 +1,11 @@
-cat > .github/workflows/ai-test.yml <<'EOF'
 name: AI Module CI
 
 on:
   push:
     branches:
       - LLM
+      - feat/ci-cd
+      - feat/ai-pipeline-integration
 
   pull_request:
     branches:
@@ -33,4 +34,3 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -v
-EOF
