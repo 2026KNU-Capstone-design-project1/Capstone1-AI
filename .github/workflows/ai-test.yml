@@ -5,6 +5,7 @@ on:
     branches:
       - LLM
       - feat/ci-cd
+      - feat/ai-pipeline-integration
 
   pull_request:
     branches:
