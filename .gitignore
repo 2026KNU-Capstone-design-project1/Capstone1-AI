@@ -12,3 +12,5 @@ venv/
 Thumbs.db
 dataset/
 output/
+runs/
+*.pt
