@@ -3,12 +3,17 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from rag_test import search_criteria, generate_assessment
+from rag_test import (
+    search_criteria,
+    search_hazard_knowledge,
+    generate_assessment,
+)
 from risk_pipeline import evaluate_hazard_risk
 from report_aggregator import aggregate_assessments
 from full_report_builder import build_full_report
 from summary_narrative import build_verified_narrative
 from schemas import RiskAssessmentItem
+from evidence_context import build_observation_summary
 
 app = FastAPI(
     title="Construction Risk Assessment AI",
@@ -29,8 +34,8 @@ class Detection(BaseModel):
     ] | None = None
 
     rule_features: dict | None = None
-
     risk_evidence: dict | None = None
+    evidence_context: dict | None = None
 
 class SourceInfo(BaseModel):
     source_type: Literal["photo", "video"]
@@ -133,13 +138,43 @@ def assess(payload: AssessmentRequest):
             detection.evidence or "",
         ])
 
-        search_results = search_criteria(
-            query,
-            top_k=5,
-            method="char"
-        )
+        context = detection.evidence_context or {}
+        checks = context.get("rule_checks") or []
 
-        
+        hazard_codes = list(dict.fromkeys(
+            check["code"]
+            for check in checks
+            if isinstance(check, dict)
+            and isinstance(check.get("code"), str)
+            and check["code"].strip()
+            and check.get("hazard") == detection.hazard
+        ))
+
+        if not hazard_codes and not checks:
+            findings = context.get("spatial_findings") or []
+            hazard_codes = list(dict.fromkeys(
+                finding["code"]
+                for finding in findings
+                if isinstance(finding, dict)
+                and isinstance(finding.get("code"), str)
+                and finding["code"].strip()
+                and finding.get("hazard") == detection.hazard
+            ))
+
+        search_results = []
+
+        for code in hazard_codes:
+            search_results.extend(
+                search_hazard_knowledge(code)
+            )
+
+        if not search_results:
+            search_results = search_criteria(
+                query,
+                top_k=5,
+                method="char"
+            )
+
         if not search_results:
             item = RiskAssessmentItem(
                 risk_id=None,
@@ -185,6 +220,7 @@ def assess(payload: AssessmentRequest):
             "work_info": payload.work_info,
             "source": payload.source.model_dump(),
             "detection": detection.model_dump(),
+            "evidence_context": detection.evidence_context,
             "rule_result": rule_result,
             "risk_assessment": risk_result,
             "retrieved_criteria": search_results,
@@ -199,6 +235,54 @@ def assess(payload: AssessmentRequest):
             ),
             return_json=True
         )
+
+        context = detection.evidence_context
+
+        if context:
+            observation_summary = build_observation_summary(context)
+
+            if observation_summary:
+                report["위험내용"] = observation_summary
+
+        unverified_knowledge = any(
+            isinstance(result, dict)
+            and result.get("verification_status") == "unverified"
+            for result in search_results
+        )
+
+        if unverified_knowledge:
+            report["법적사항"] = "관련 법령 추가 확인 필요"
+
+        matched_knowledge = [
+            result
+            for result in search_results
+            if isinstance(result, dict)
+            and result.get("retrieval_method") == "hazard_code_exact"
+        ]
+
+        if matched_knowledge:
+            knowledge = matched_knowledge[0]
+
+            safety_criteria = knowledge.get("safety_criteria") or []
+            improvements = knowledge.get("improvement") or []
+            additional_checks = knowledge.get("additional_checks") or []
+
+            if safety_criteria:
+                report["관련 안전 기준"] = (
+                    "[검토용 안전조치 초안] "
+                    + " ".join(safety_criteria)
+                )
+
+            if improvements:
+                report["개선대책"] = " ".join(improvements)
+
+            if safety_criteria:
+                report["안전대책"] = " ".join(safety_criteria)
+
+            if additional_checks:
+                report["위험도 평가 시 추가 확인사항"] = (
+                    " / ".join(additional_checks)
+                )
 
         if risk_result is not None:
             risk_level = risk_result.get("risk_level")
@@ -217,26 +301,53 @@ def assess(payload: AssessmentRequest):
         if violation_status in ("미확인", "위반 의심"):
             report["위험도"] = "추가 확인 필요"
 
-            report["위험도 판단 근거"] = (
-                rule_result.get("reason")
-                if rule_result is not None
-                else "위험 판단에 필요한 공간관계 및 방호시설 확인 정보가 부족함"
-            )
+            if rule_result is not None:
+                report["위험도 판단 근거"] = (
+                    rule_result.get("reason")
+                    or "규칙 판단 근거에 대한 추가 확인 필요"
+                )
+            else:
+                context = detection.evidence_context or {}
+                evidence_status = context.get("evidence_status")
 
-            report["개선대책"] = (
-                "현장 점검을 통해 방호시설 설치 및 정상 작동 여부를 "
-                "우선 확인하고, 미설치 또는 불량이 확인되면 필요한 방호조치를 실시"
-            )
+                if evidence_status == "matched":
+                    report["위험도 판단 근거"] = (
+                        "YOLO 위험 탐지와 공간관계 규칙에서 동일한 "
+                        "위험 후보가 확인되었으나, 실제 위반 여부 및 "
+                        "위험도 산정에 필요한 근거는 충분하지 않음"
+                    )
+                elif evidence_status == "detection_only":
+                    report["위험도 판단 근거"] = (
+                        "YOLO에서 위험 후보가 탐지되었으나 "
+                        "공간관계 규칙의 위험 판단 근거가 확인되지 않음. "
+                        "규칙 미지원, 조건 불충족 또는 객체 미탐지 "
+                        "가능성이 있어 추가 확인 필요"
+                    )
+                elif evidence_status == "spatial_only":
+                    report["위험도 판단 근거"] = (
+                        "공간관계 규칙에서 위험 후보가 발견되었으나 "
+                        "YOLO 위험 탐지 결과와의 일치가 확인되지 않음"
+                    )
+                elif evidence_status == "undetermined":
+                    report["위험도 판단 근거"] = (
+                        "공간관계 규칙에서 판단불가 결과가 발생하여 "
+                        "실제 위험 여부에 대한 추가 확인 필요"
+                    )
+                else:
+                    report["위험도 판단 근거"] = (
+                        "위험 판단에 필요한 근거가 충분하지 않음"
+                    )
 
-            report["안전대책"] = (
-                "확인 전까지 해당 위험구역에 대한 접근을 통제하고, "
-                "방호시설 상태 확인 후 필요한 안전조치를 실시"
-            )
+            if not matched_knowledge:
+                report["안전대책"] = (
+                    "현장 확인 전까지 위험요소에 대한 예방조치를 검토하고, "
+                    "실제 위험 상태가 확인되면 필요한 안전조치를 실시"
+                )
 
-            report["위험도 평가 시 추가 확인사항"] = (
-                "방호시설 설치 여부, 관측 가림 여부, "
-                "작업자 접근 상태 및 실제 작업 조건"
-            )
+                report["위험도 평가 시 추가 확인사항"] = (
+                    "영상 탐지 결과의 정확성, 실제 작업 상태, "
+                    "위험요소별 안전조치 이행 여부"
+                )
 
         item = RiskAssessmentItem(
             risk_id=None, 
