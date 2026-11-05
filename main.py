@@ -139,16 +139,46 @@ def assess(payload: AssessmentRequest):
             method="char"
         )
 
+        
         if not search_results:
-            assessments.append({
-                "hazard": detection.hazard,
-                "violation_status": ...,
-                "risk_level": ...,
-                "rule_result": rule_result,
-                "risk_assessment": risk_result,
-                "retrieved_criteria_count": len(search_results),
-                "report": report,
-            })
+            item = RiskAssessmentItem(
+                risk_id=None,
+                hazard=detection.hazard,
+                hazard_type=detection.hazard_type,
+                location=detection.location,
+                area=(
+                    payload.work_info.get("location")
+                    if payload.work_info
+                    else None
+                ),
+                work_name=(
+                    payload.work_info.get("work_name")
+                    if payload.work_info
+                    else None
+                ),
+                image_url=payload.source.image_url,
+                bbox=detection.bbox,
+                confidence=detection.confidence,
+                violation_status=(
+                    rule_result.get("violation_status")
+                    if rule_result is not None
+                    else "미확인"
+                ),
+                risk_level=(
+                    risk_result.get("risk_level", "미확정")
+                    if risk_result is not None
+                    else "미확정"
+                ),
+                rule_result=rule_result,
+                risk_assessment=risk_result,
+                report=None,
+                action_status=None,
+                first_detected_at=None,
+            )
+
+            assessments.append(item.model_dump())
+            continue
+
 
         scene = {
             "site_info": payload.site_info,
