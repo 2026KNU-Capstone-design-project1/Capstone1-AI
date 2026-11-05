@@ -257,8 +257,36 @@ def generate_assessment(scene, results, return_json=False):
         },
     )
 
+    
     elapsed = time.perf_counter() - start
-    print(f"Qwen 호출 완료: {elapsed:.2f}초", flush=True)
+
+    print(f"\nQwen 호출 완료: {elapsed:.2f}초", flush=True)
+
+    # Ollama 성능 측정
+    print("===== Ollama 성능 분석 =====")
+
+    print(f"모델 로딩 시간: {response.load_duration / 1e9:.2f}초")
+
+    print(
+        f"입력 토큰 처리 시간: "
+        f"{response.prompt_eval_duration / 1e9:.2f}초"
+    )
+
+    print(f"입력 토큰 수: {response.prompt_eval_count}")
+
+    print(
+        f"출력 토큰 생성 시간: "
+        f"{response.eval_duration / 1e9:.2f}초"
+    )
+
+    print(f"출력 토큰 수: {response.eval_count}")
+
+    if response.eval_duration and response.eval_count:
+        tokens_per_second = (
+            response.eval_count / (response.eval_duration / 1e9)
+        )
+        print(f"토큰 생성 속도: {tokens_per_second:.2f} tokens/s")
+
 
     # 응답 내용 확인
     content = (response.message.content or "").strip()
