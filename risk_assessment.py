@@ -36,7 +36,8 @@ def assess_risk(
     likelihood=None,
     severity=None,
     evidence_sufficient=False,
-    review_reason=None
+    review_reason=None,
+    critical_hazard_confirmed=False
 ):
     """
     안전 규칙 엔진 결과와 L/S 평가 근거를 받아 위험도를 산정한다.
@@ -48,6 +49,9 @@ def assess_risk(
 
     if not isinstance(rule_result, dict):
         raise ValueError("rule_result는 딕셔너리 형태여야 합니다.")
+
+    if not isinstance(critical_hazard_confirmed, bool):
+        raise ValueError("critical_hazard_confirmed는 bool이어야 합니다.")
 
     violation_status = rule_result.get("violation_status")
     hazard = rule_result.get("hazard")
@@ -103,8 +107,10 @@ def assess_risk(
 
     risk_score = calculate_risk_score(likelihood, severity)
     risk_level = classify_risk_level(risk_score)
+    if critical_hazard_confirmed:
+        risk_level = "상"
 
-    return {
+    result = {
         "hazard": hazard,
         "violation_status": violation_status,
         "likelihood": likelihood,
@@ -115,6 +121,12 @@ def assess_risk(
         "review_required": False,
         "review_reason": None
     }
+    if critical_hazard_confirmed:
+        result["critical_priority_applied"] = True
+        result["critical_priority_reason"] = (
+            "중대 위험 확인에 따른 위험등급 상향"
+        )
+    return result
 
 
 # 위험요소별 평가 대상
@@ -169,12 +181,18 @@ def assess_risk_from_evidence(rule_result, risk_evidence):
     worker_exposure = risk_evidence.get("worker_exposure")
     expected_consequence = risk_evidence.get("expected_consequence")
     evidence_sufficient = risk_evidence.get("evidence_sufficient")
+    critical_hazard_confirmed = risk_evidence.get(
+        "critical_hazard_confirmed", False
+    )
 
     if hazard_type not in SUPPORTED_HAZARDS:
         raise ValueError(f"지원하지 않는 위험요소: {hazard_type}")
 
     if not isinstance(evidence_sufficient, bool):
         raise ValueError("evidence_sufficient는 True 또는 False여야 합니다.")
+
+    if not isinstance(critical_hazard_confirmed, bool):
+        raise ValueError("critical_hazard_confirmed는 bool이어야 합니다.")
 
     if evidence_sufficient is False:
         return assess_risk(
@@ -197,7 +215,8 @@ def assess_risk_from_evidence(rule_result, risk_evidence):
         rule_result,
         likelihood=likelihood,
         severity=severity,
-        evidence_sufficient=True
+        evidence_sufficient=True,
+        critical_hazard_confirmed=critical_hazard_confirmed
     )
 
     result["hazard_type"] = hazard_type
