@@ -14,18 +14,25 @@ def adapt_video_results(payload: dict[str, Any]) -> list[dict]:
     adapted = []
 
     for frame in payload["results"]:
-        source = {
-            "source_type": frame["source_type"],
-            "photo_id": frame.get("photo_id"),
-            "video_id": frame.get("video_id"),
-            "frame_index": frame.get("frame_index"),
-            "frame_time_ms": frame.get("frame_time_ms"),
-            "image_url": frame.get("image_url"),
-        }
+        if isinstance(frame.get("source"), dict):
+            source = frame["source"].copy()
+        else:
+            source = {
+                "source_type": frame["source_type"],
+                "photo_id": frame.get("photo_id"),
+                "video_id": frame.get("video_id"),
+                "frame_index": frame.get("frame_index"),
+                "frame_time_ms": frame.get("frame_time_ms"),
+                "image_url": frame.get("image_url"),
+            }
 
         relations = frame.get("relations") or {}
 
         adapted.append({
+            "assessment_id": frame.get("assessment_id"),
+            "site_info": frame.get("site_info"),
+            "work_info": frame.get("work_info"),
+
             "source": source,
             "detections": frame.get("detections") or [],
             "spatial_objects": relations.get("objects") or [],
@@ -70,12 +77,13 @@ def build_assessment_requests(payload: dict) -> list[dict]:
             })
 
         requests.append({
-            "assessment_id": (
-                f"video-{source.get('video_id')}-"
-                f"frame-{source.get('frame_index')}"
+            "assessment_id": frame.get("assessment_id") or (
+                f"video-{source.get('video_id')}-frame-{source.get('frame_index')}"
+                if source.get("source_type") == "video"
+                else f"photo-{source.get('photo_id')}"
             ),
-            "site_info": None,
-            "work_info": None,
+            "site_info": frame.get("site_info"),
+            "work_info": frame.get("work_info"),
             "source": source,
             "detections": detections,
         })

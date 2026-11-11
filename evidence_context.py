@@ -122,6 +122,26 @@ def build_observation_summary(context: dict) -> str:
             "위험 후보가 제시되었다."
         )
 
+        # 기하학적 관계와 규칙 기반 위험 판단 근거를 구분한다.
+        for finding in context.get("spatial_findings") or []:
+            if not isinstance(finding, dict):
+                continue
+
+            code = finding.get("code")
+            relation_type = finding.get("type")
+            finding_status = finding.get("status")
+
+            if (
+                code
+                and relation_type
+                and finding_status == "위험"
+            ):
+                sentences.append(
+                    f"위험 판단 규칙 {code}은(는) "
+                    f"'{relation_type}' 조건에 따라 "
+                    "위험 후보를 제시하였다."
+                )
+
     if status == "matched":
         sentences.append(
             "YOLO와 공간관계 규칙에서 동일한 위험 후보가 제시되었다."

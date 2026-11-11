@@ -384,7 +384,7 @@ def generate_assessment(scene, results, return_json=False):
         stream=False,
         options={
             "temperature": 0,
-            "num_predict": 1200,
+            "num_predict": 2500,
         },
     )
 

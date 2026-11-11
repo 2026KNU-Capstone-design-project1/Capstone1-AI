@@ -1,0 +1,308 @@
+{
+  "video_id": 2,
+  "count": 3,
+  "elapsed_ms": 33965,
+  "results": [
+    {
+      "source_type": "video",
+      "photo_id": null,
+      "video_id": 2,
+      "frame_index": 2880,
+      "frame_time_ms": 96000,
+      "image_url": "http://localhost:8001/frames/video_2/frame_2880.jpg",
+      "detections": [
+        {
+          "hazard": "이동식 크레인 작업 시 철제 인양박스 미사용",
+          "location": "사진 전체 이동식 크레인",
+          "evidence": "철제 인양박스 대신 항공마대 등으로 자재를 인양하고 있음",
+          "bbox": {
+            "x": 0.0458,
+            "y": 0,
+            "width": 0.7579,
+            "height": 0.8258
+          },
+          "confidence": 0.9826
+        }
+      ],
+      "relations": {
+        "objects": [
+          {
+            "code": "SO-38",
+            "bbox": [
+              0.5318,
+              0.1242,
+              0.0834,
+              0.1528
+            ],
+            "confidence": 0.9902,
+            "id": 0,
+            "name": "항공마대",
+            "category": "안전보조장비"
+          },
+          {
+            "code": "WO-08",
+            "bbox": [
+              0.0604,
+              0,
+              0.5718,
+              0.6823
+            ],
+            "confidence": 0.9556,
+            "id": 1,
+            "name": "전도방지대가 설치된 이동식크레인",
+            "category": "장비"
+          },
+          {
+            "code": "WO-02",
+            "bbox": [
+              0.7231,
+              0.4248,
+              0.0802,
+              0.3955
+            ],
+            "confidence": 0.922,
+            "id": 2,
+            "name": "신호수",
+            "category": "사람"
+          }
+        ],
+        "relations": [
+          {
+            "a": 0,
+            "b": 1,
+            "type": "포함",
+            "iou": 0.0327,
+            "a_in_b": 1,
+            "b_in_a": 0.0327,
+            "gap": 0,
+            "a_above_b": false
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "type": "이격",
+            "iou": 0,
+            "a_in_b": 0,
+            "b_in_a": 0,
+            "gap": 0.1187,
+            "a_above_b": false
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "type": "이격",
+            "iou": 0,
+            "a_in_b": 0,
+            "b_in_a": 0,
+            "gap": 0.0792,
+            "a_above_b": false
+          }
+        ],
+        "continuity": [],
+        "findings": [
+          {
+            "code": "N-20",
+            "type": "위험 인접",
+            "status": "위험",
+            "objects": [
+              1,
+              0
+            ],
+            "gap": 0,
+            "hazard": "이동식 크레인 작업 시 철제 인양박스 미사용"
+          }
+        ],
+        "evaluation_status": "hazard",
+        "reason_code": "rule_matched",
+        "checks": [
+          {
+            "code": "N-20",
+            "hazard": "이동식 크레인 작업 시 철제 인양박스 미사용",
+            "detected_by_model": true,
+            "status": "hazard",
+            "reason_code": "rule_matched",
+            "agrees_with_model": true
+          }
+        ]
+      }
+    },
+    {
+      "source_type": "video",
+      "photo_id": null,
+      "video_id": 2,
+      "frame_index": 6795,
+      "frame_time_ms": 226500,
+      "image_url": "http://localhost:8001/frames/video_2/frame_6795.jpg",
+      "detections": [
+        {
+          "hazard": "용접기 옆 소화기 미배치",
+          "location": "사진 가운데 용접기",
+          "evidence": "용접기 옆에 소화기가 배치되어 있지 않음",
+          "bbox": {
+            "x": 0.3864,
+            "y": 0.2878,
+            "width": 0.2299,
+            "height": 0.2629
+          },
+          "confidence": 0.9812
+        }
+      ],
+      "relations": {
+        "objects": [
+          {
+            "code": "SO-24",
+            "bbox": [
+              0.5751,
+              0.439,
+              0.0397,
+              0.0601
+            ],
+            "confidence": 0.8731,
+            "id": 0,
+            "name": "용접기",
+            "category": "공구"
+          }
+        ],
+        "relations": [],
+        "continuity": [],
+        "findings": [
+          {
+            "code": "N-33",
+            "type": "결여",
+            "status": "위험",
+            "objects": [
+              0
+            ],
+            "missing": [
+              "SO-40"
+            ],
+            "hazard": "용접기 옆 소화기 미배치"
+          }
+        ],
+        "evaluation_status": "hazard",
+        "reason_code": "rule_matched",
+        "checks": [
+          {
+            "code": "N-33",
+            "hazard": "용접기 옆 소화기 미배치",
+            "detected_by_model": true,
+            "status": "hazard",
+            "reason_code": "rule_matched",
+            "agrees_with_model": true
+          }
+        ]
+      }
+    },
+    {
+      "source_type": "video",
+      "photo_id": null,
+      "video_id": 2,
+      "frame_index": 8835,
+      "frame_time_ms": 294500,
+      "image_url": "http://localhost:8001/frames/video_2/frame_8835.jpg",
+      "detections": [
+        {
+          "hazard": "지게차 운전자 시야 초과 자재 과적재",
+          "location": "사진 가운데 지게차",
+          "evidence": "지게차에 운전자 시야를 넘는 높이로 자재가 실려 있음",
+          "bbox": {
+            "x": 0.24,
+            "y": 0.2595,
+            "width": 0.5025,
+            "height": 0.3505
+          },
+          "confidence": 0.9841
+        }
+      ],
+      "relations": {
+        "objects": [
+          {
+            "code": "WO-14",
+            "bbox": [
+              0.4589,
+              0.3325,
+              0.2827,
+              0.2555
+            ],
+            "confidence": 0.934,
+            "id": 0,
+            "name": "지게차",
+            "category": "장비"
+          },
+          {
+            "code": "WO-02",
+            "bbox": [
+              0.2381,
+              0.413,
+              0.0684,
+              0.1907
+            ],
+            "confidence": 0.9112,
+            "id": 1,
+            "name": "신호수",
+            "category": "사람"
+          },
+          {
+            "code": "SO-32",
+            "bbox": [
+              0.4043,
+              0.2605,
+              0.0716,
+              0.3029
+            ],
+            "confidence": 0.8982,
+            "id": 2,
+            "name": "단열재",
+            "category": "자재"
+          }
+        ],
+        "relations": [
+          {
+            "a": 0,
+            "b": 1,
+            "type": "이격",
+            "iou": 0,
+            "a_in_b": 0,
+            "b_in_a": 0,
+            "gap": 0.1328,
+            "a_above_b": false
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "type": "중첩",
+            "iou": 0.0436,
+            "a_in_b": 0.0543,
+            "b_in_a": 0.181,
+            "gap": 0,
+            "a_above_b": false
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "type": "이격",
+            "iou": 0,
+            "a_in_b": 0,
+            "b_in_a": 0,
+            "gap": 0.0852,
+            "a_above_b": false
+          }
+        ],
+        "continuity": [],
+        "findings": [],
+        "evaluation_status": "not_evaluable",
+        "reason_code": "rule_not_supported",
+        "checks": [
+          {
+            "code": "N-50",
+            "hazard": "지게차 운전자 시야 초과 자재 과적재",
+            "detected_by_model": true,
+            "status": "not_evaluable",
+            "reason_code": "rule_not_supported",
+            "agrees_with_model": null
+          }
+        ]
+      }
+    }
+  ]
+}

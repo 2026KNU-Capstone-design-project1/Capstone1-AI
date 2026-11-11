@@ -1,0 +1,5 @@
+﻿model,n_total,n_covered,n_review,coverage,tp_exact_code,fp_normal,fn_hazard_in_covered,tn,wrong_code_hazard,gt_hazard_review,gt_normal_review,precision_covered,recall_covered,f1_covered,fpr_covered,recall_all_hazard_review_as_miss
+A,1256,1256,0,1.0,465,16,110,665,1,0,0,0.96473,0.808696,0.879849,0.023495,0.808696
+B,1256,1121,135,0.892516,380,13,84,644,37,111,24,0.883721,0.818966,0.850112,0.019787,0.66087
+C,1256,1217,39,0.968949,465,16,88,648,1,22,17,0.96473,0.840868,0.898551,0.024096,0.808696
+D,1256,995,261,0.792197,322,3,33,637,0,220,41,0.990769,0.907042,0.947059,0.004687,0.56
