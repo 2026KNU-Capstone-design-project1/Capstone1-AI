@@ -1,0 +1,115 @@
+﻿case,check,passed,details
+demo_result.json,assessments_list,True,
+demo_result.json,assessment_1_object,True,
+demo_result.json,assessment_1_hazard,True,
+demo_result.json,assessment_1_violation_status,True,미확인
+demo_result.json,assessment_1_risk_level,True,미확정
+demo_result.json,assessment_1_unconfirmed_risk,True,"violation=미확인, risk=미확정"
+demo_result.json,assessment_1_report_object,True,
+demo_result.json,assessment_1_report_위험요소,True,value=추가 확인 필요
+demo_result.json,assessment_1_report_예상 재해유형,True,value=낙하·비래
+demo_result.json,assessment_1_report_위험도,True,value=추가 확인 필요
+demo_result.json,assessment_1_report_위험도 판단 근거,True,"value=YOLO 위험 탐지와 공간관계 규칙에서 동일한 위험 후보가 확인되었으나, 실제 위반 여부 및 위험도 산정에 필요한 근거는 충분하지 않음"
+demo_result.json,assessment_1_report_위험내용,True,"value=YOLO에서 '이동식 크레인 작업 시 철제 인양박스 미사용' 위험 후보가 탐지되었다. 객체 탐지 결과 항공마대, 전도방지대가 설치된 이동식크레인이(가) 관측되었다. 항공마대와(과)"
+demo_result.json,assessment_1_report_관련 안전 기준,True,value=[검토용 안전조치 초안] 인양 대상 자재에 적합한 인양용기 및 인양방법을 확인한다. 인양 중 자재가 이탈하거나 낙하할 가능성이 있는지 확인한다.
+demo_result.json,assessment_1_report_법적사항,True,value=관련 법령 추가 확인 필요
+demo_result.json,assessment_1_report_개선대책,True,value=현장에서 실제 사용 중인 인양용기의 적합성을 확인한다. 부적합한 인양방법이 확인되면 적합한 인양용기와 방법으로 변경한다.
+demo_result.json,assessment_1_report_안전대책,True,value=인양 대상 자재에 적합한 인양용기 및 인양방법을 확인한다. 인양 중 자재가 이탈하거나 낙하할 가능성이 있는지 확인한다.
+demo_result.json,assessment_1_report_위험도 평가 시 추가 확인사항,True,value=실제 인양 작업이 진행 중인지 / 인양용기 및 인양방법이 자재 특성에 적합한지 / 인양 중 자재의 이탈·낙하 방지조치가 마련되어 있는지
+demo_result.json,assessment_1_report_risk_consistency,True,"assessment=미확정, report=추가 확인 필요"
+demo_result.json,assessment_1_no_explicit_violation_claim,True,명시적인 위반 확정 문구 검사
+demo_result.json,assessment_1_legal_basis_present,True,관련 법령 추가 확인 필요
+demo_result_multi.json,assessments_list,True,
+demo_result_multi.json,assessment_1_object,True,
+demo_result_multi.json,assessment_1_hazard,True,
+demo_result_multi.json,assessment_1_violation_status,True,미확인
+demo_result_multi.json,assessment_1_risk_level,True,미확정
+demo_result_multi.json,assessment_1_unconfirmed_risk,True,"violation=미확인, risk=미확정"
+demo_result_multi.json,assessment_1_report_object,True,
+demo_result_multi.json,assessment_1_report_위험요소,True,value=이동식 크레인 작업 시 철제 인양박스 미사용
+demo_result_multi.json,assessment_1_report_예상 재해유형,True,value=낙하·비래
+demo_result_multi.json,assessment_1_report_위험도,True,value=추가 확인 필요
+demo_result_multi.json,assessment_1_report_위험도 판단 근거,True,"value=YOLO 위험 탐지와 공간관계 규칙에서 동일한 위험 후보가 확인되었으나, 실제 위반 여부 및 위험도 산정에 필요한 근거는 충분하지 않음"
+demo_result_multi.json,assessment_1_report_위험내용,True,"value=YOLO에서 '이동식 크레인 작업 시 철제 인양박스 미사용' 위험 후보가 탐지되었다. 객체 탐지 결과 항공마대, 전도방지대가 설치된 이동식크레인이(가) 관측되었다. 항공마대와(과)"
+demo_result_multi.json,assessment_1_report_관련 안전 기준,True,value=[검토용 안전조치 초안] 인양 대상 자재에 적합한 인양용기 및 인양방법을 확인한다. 인양 중 자재가 이탈하거나 낙하할 가능성이 있는지 확인한다.
+demo_result_multi.json,assessment_1_report_법적사항,True,value=관련 법령 추가 확인 필요
+demo_result_multi.json,assessment_1_report_개선대책,True,value=현장에서 실제 사용 중인 인양용기의 적합성을 확인한다. 부적합한 인양방법이 확인되면 적합한 인양용기와 방법으로 변경한다.
+demo_result_multi.json,assessment_1_report_안전대책,True,value=인양 대상 자재에 적합한 인양용기 및 인양방법을 확인한다. 인양 중 자재가 이탈하거나 낙하할 가능성이 있는지 확인한다.
+demo_result_multi.json,assessment_1_report_위험도 평가 시 추가 확인사항,True,value=실제 인양 작업이 진행 중인지 / 인양용기 및 인양방법이 자재 특성에 적합한지 / 인양 중 자재의 이탈·낙하 방지조치가 마련되어 있는지
+demo_result_multi.json,assessment_1_report_risk_consistency,True,"assessment=미확정, report=추가 확인 필요"
+demo_result_multi.json,assessment_1_no_explicit_violation_claim,True,명시적인 위반 확정 문구 검사
+demo_result_multi.json,assessment_1_legal_basis_present,True,관련 법령 추가 확인 필요
+demo_result_multi.json,assessment_2_object,True,
+demo_result_multi.json,assessment_2_hazard,True,
+demo_result_multi.json,assessment_2_violation_status,True,미확인
+demo_result_multi.json,assessment_2_risk_level,True,미확정
+demo_result_multi.json,assessment_2_unconfirmed_risk,True,"violation=미확인, risk=미확정"
+demo_result_multi.json,assessment_2_report_object,True,
+demo_result_multi.json,assessment_2_report_위험요소,True,value=추가 확인 필요
+demo_result_multi.json,assessment_2_report_예상 재해유형,True,value=화재·폭발
+demo_result_multi.json,assessment_2_report_위험도,True,value=추가 확인 필요
+demo_result_multi.json,assessment_2_report_위험도 판단 근거,True,"value=YOLO 위험 탐지와 공간관계 규칙에서 동일한 위험 후보가 확인되었으나, 실제 위반 여부 및 위험도 산정에 필요한 근거는 충분하지 않음"
+demo_result_multi.json,assessment_2_report_위험내용,True,value=YOLO에서 '용접기 옆 소화기 미배치' 위험 후보가 탐지되었다. 객체 탐지 결과 용접기이(가) 관측되었다. 공간관계 규칙 N-33에서 위험 후보가 제시되었다. YOLO와 공간관계
+demo_result_multi.json,assessment_2_report_관련 안전 기준,True,value=[검토용 안전조치 초안] 용접·화기작업 구역에 필요한 소화설비가 적절히 배치되어 있는지 확인한다. 작업 장소의 화재 예방조치와 소화설비 접근 가능 여부를 확인한다.
+demo_result_multi.json,assessment_2_report_법적사항,True,value=관련 법령 추가 확인 필요
+demo_result_multi.json,assessment_2_report_개선대책,True,value=현장에 소화설비가 실제로 비치되어 있는지 확인한다. 필요한 소화설비가 없는 경우 적절한 소화설비를 배치한 뒤 작업 조건을 재확인한다.
+demo_result_multi.json,assessment_2_report_안전대책,True,value=용접·화기작업 구역에 필요한 소화설비가 적절히 배치되어 있는지 확인한다. 작업 장소의 화재 예방조치와 소화설비 접근 가능 여부를 확인한다.
+demo_result_multi.json,assessment_2_report_위험도 평가 시 추가 확인사항,True,value=영상 밖이나 사각지대에 소화기가 있는지 / 실제 용접·화기작업이 진행 중인지 / 작업 구역의 화재 예방조치가 적절한지
+demo_result_multi.json,assessment_2_report_risk_consistency,True,"assessment=미확정, report=추가 확인 필요"
+demo_result_multi.json,assessment_2_no_explicit_violation_claim,True,명시적인 위반 확정 문구 검사
+demo_result_multi.json,assessment_2_legal_basis_present,True,관련 법령 추가 확인 필요
+demo_result_multi.json,assessment_3_object,True,
+demo_result_multi.json,assessment_3_hazard,True,
+demo_result_multi.json,assessment_3_violation_status,True,미확인
+demo_result_multi.json,assessment_3_risk_level,True,미확정
+demo_result_multi.json,assessment_3_unconfirmed_risk,True,"violation=미확인, risk=미확정"
+demo_result_multi.json,assessment_3_report_object,True,
+demo_result_multi.json,assessment_3_report_위험요소,True,value=지게차 운전자 시야 초과 자재 과적재
+demo_result_multi.json,assessment_3_report_예상 재해유형,True,value=충돌·협착
+demo_result_multi.json,assessment_3_report_위험도,True,value=추가 확인 필요
+demo_result_multi.json,assessment_3_report_위험도 판단 근거,True,value=공간관계 규칙에서 판단불가 결과가 발생하여 실제 위험 여부에 대한 추가 확인 필요
+demo_result_multi.json,assessment_3_report_위험내용,True,value=YOLO에서 '지게차 운전자 시야 초과 자재 과적재' 위험 후보가 탐지되었다. 해당 위험에 대한 공간관계 판단 규칙이 지원되지 않아 규칙 기반 평가를 수행하지 못했다. 영상 분석 
+demo_result_multi.json,assessment_3_report_관련 안전 기준,True,value=[검토용 안전조치 초안] 지게차 운전자의 전방 시야가 적재물에 의해 제한되는지 확인한다. 적재 상태와 운행 방법이 현장 안전조건에 적합한지 확인한다.
+demo_result_multi.json,assessment_3_report_법적사항,True,value=관련 법령 추가 확인 필요
+demo_result_multi.json,assessment_3_report_개선대책,True,value=적재물의 높이와 운전자 시야 확보 여부를 확인한다. 운전자 시야가 제한되는 경우 안전한 적재 및 운행 방법을 검토한다.
+demo_result_multi.json,assessment_3_report_안전대책,True,value=지게차 운전자의 전방 시야가 적재물에 의해 제한되는지 확인한다. 적재 상태와 운행 방법이 현장 안전조건에 적합한지 확인한다.
+demo_result_multi.json,assessment_3_report_위험도 평가 시 추가 확인사항,True,value=운전자의 실제 시야가 가려지는지 / 적재물의 높이와 고정 상태가 적절한지 / 지게차가 실제로 운행 중인지
+demo_result_multi.json,assessment_3_report_risk_consistency,True,"assessment=미확정, report=추가 확인 필요"
+demo_result_multi.json,assessment_3_no_explicit_violation_claim,True,명시적인 위반 확정 문구 검사
+demo_result_multi.json,assessment_3_legal_basis_present,True,관련 법령 추가 확인 필요
+db_payload,item_count,True,"db=3, api=3"
+db_payload,item_1_hazard_preserved,True,"source=이동식 크레인 작업 시 철제 인양박스 미사용, db=이동식 크레인 작업 시 철제 인양박스 미사용"
+db_payload,item_1_violation_status_preserved,True,"source=미확인, db=미확인"
+db_payload,item_1_risk_level_preserved,True,"source=미확정, db=미확정"
+db_payload,item_1_confidence_preserved,True,"source=0.9826, db=0.9826"
+db_payload,item_1_bbox_preserved,True,"source={'x': 0.0458, 'y': 0.0, 'width': 0.7579, 'height': 0.8258}, db={'x': 0.0458, 'y': 0.0, 'width': 0.7579, 'height': 0.8258}"
+db_payload,item_2_hazard_preserved,True,"source=용접기 옆 소화기 미배치, db=용접기 옆 소화기 미배치"
+db_payload,item_2_violation_status_preserved,True,"source=미확인, db=미확인"
+db_payload,item_2_risk_level_preserved,True,"source=미확정, db=미확정"
+db_payload,item_2_confidence_preserved,True,"source=0.9812, db=0.9812"
+db_payload,item_2_bbox_preserved,True,"source={'x': 0.3864, 'y': 0.2878, 'width': 0.2299, 'height': 0.2629}, db={'x': 0.3864, 'y': 0.2878, 'width': 0.2299, 'height': 0.2629}"
+db_payload,item_3_hazard_preserved,True,"source=지게차 운전자 시야 초과 자재 과적재, db=지게차 운전자 시야 초과 자재 과적재"
+db_payload,item_3_violation_status_preserved,True,"source=미확인, db=미확인"
+db_payload,item_3_risk_level_preserved,True,"source=미확정, db=미확정"
+db_payload,item_3_confidence_preserved,True,"source=0.9841, db=0.9841"
+db_payload,item_3_bbox_preserved,True,"source={'x': 0.24, 'y': 0.2595, 'width': 0.5025, 'height': 0.3505}, db={'x': 0.24, 'y': 0.2595, 'width': 0.5025, 'height': 0.3505}"
+db_payload,summary_total,True,"summary=3, actual=3"
+db_payload,summary_confirmed_violations,True,"summary=0, actual=0"
+db_payload,summary_suspected_violations,True,"summary=0, actual=0"
+db_payload,summary_normal,True,"summary=0, actual=0"
+db_payload,summary_unconfirmed,True,"summary=3, actual=3"
+db_payload,summary_high_risk,True,"summary=0, actual=0"
+db_payload,summary_medium_risk,True,"summary=0, actual=0"
+db_payload,summary_low_risk,True,"summary=0, actual=0"
+db_payload,summary_undetermined_risk,True,"summary=3, actual=3"
+db_payload_stored,summary_total,True,"summary=3, actual=3"
+db_payload_stored,summary_confirmed_violations,True,"summary=0, actual=0"
+db_payload_stored,summary_suspected_violations,True,"summary=0, actual=0"
+db_payload_stored,summary_normal,True,"summary=0, actual=0"
+db_payload_stored,summary_unconfirmed,True,"summary=3, actual=3"
+db_payload_stored,summary_high_risk,True,"summary=0, actual=0"
+db_payload_stored,summary_medium_risk,True,"summary=0, actual=0"
+db_payload_stored,summary_low_risk,True,"summary=0, actual=0"
+db_payload_stored,summary_undetermined_risk,True,"summary=3, actual=3"
+db_payload,assessment_count,True,count=3
+db_payload,full_report_count,True,

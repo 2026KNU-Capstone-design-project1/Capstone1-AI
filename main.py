@@ -215,6 +215,24 @@ def assess(payload: AssessmentRequest):
             continue
 
 
+        # Unverified law excerpts support retrieval/audit only, never legal conclusions.
+        from law_rag import search_law_articles
+        law_candidates = [
+            {
+                "id": law.get("id"),
+                "law_name": law.get("law_name"),
+                "article_number": law.get("article_number"),
+                "article_title": law.get("article_title"),
+                "article_excerpt": (law.get("article_text") or "")[:600],
+                "source_pages": law.get("source_pages", []),
+                "score": law.get("score"),
+                "verification_status": law.get("verification_status", "unverified"),
+                "official_source_url": law.get("official_source_url"),
+                "effective_date": law.get("effective_date"),
+            }
+            for law in search_law_articles(query, top_k=3, min_score=0.08)
+        ]
+
         scene = {
             "site_info": payload.site_info,
             "work_info": payload.work_info,
@@ -224,6 +242,7 @@ def assess(payload: AssessmentRequest):
             "rule_result": rule_result,
             "risk_assessment": risk_result,
             "retrieved_criteria": search_results,
+            "retrieved_law_candidates": law_candidates,
         }
 
         report = generate_assessment(
@@ -250,7 +269,33 @@ def assess(payload: AssessmentRequest):
             for result in search_results
         )
 
-        if unverified_knowledge:
+        # Deterministic legal provenance gate: LLM output is never enough.
+        # Verified law must have an official reference and applicability date.
+        verified_laws = [
+            law for law in law_candidates
+            if law.get("verification_status") == "verified"
+            and law.get("official_source_url")
+            and law.get("effective_date")
+        ]
+        verified_code_basis = [
+            r for r in search_results
+            if isinstance(r, dict)
+            and r.get("retrieval_method") == "hazard_code_exact"
+            and r.get("verification_status") == "verified"
+            and r.get("legal_basis")
+            and r.get("official_source_url")
+            and r.get("effective_date")
+        ]
+        if verified_laws:
+            report["법적사항"] = "관련 법령(현장 적용·위반 여부 별도 확인): " + "; ".join(
+                f'{law["law_name"]} {law["article_number"]} ({law["article_title"]})'
+                for law in verified_laws
+            )
+        elif verified_code_basis:
+            report["법적사항"] = "관련 법령(현장 적용·위반 여부 별도 확인): " + "; ".join(
+                str(r["legal_basis"]) for r in verified_code_basis
+            )
+        else:
             report["법적사항"] = "관련 법령 추가 확인 필요"
 
         matched_knowledge = [
