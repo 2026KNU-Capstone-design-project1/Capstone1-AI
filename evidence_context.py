@@ -31,6 +31,8 @@ def build_evidence_context(
         "source": frame.get("source"),
         "hazard": fused_item.get("hazard"),
         "evidence_status": fused_item.get("evidence_status"),
+        "risk_alert_policy": fused_item.get("risk_alert_policy"),
+        "risk_alert_source": fused_item.get("risk_alert_source"),
 
         # 새로 추가
         "evaluation_status": fused_item.get("evaluation_status"),
