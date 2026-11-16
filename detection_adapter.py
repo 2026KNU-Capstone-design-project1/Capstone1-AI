@@ -1,5 +1,6 @@
 from typing import Any
 from evidence_fusion import fuse_evidence
+from recall_priority import select_recall_priority_candidates
 from evidence_context import build_evidence_context
 
 def adapt_video_results(payload: dict[str, Any]) -> list[dict]:
@@ -46,6 +47,11 @@ def adapt_video_results(payload: dict[str, Any]) -> list[dict]:
 
     for frame in adapted:
         frame["fused_evidence"] = fuse_evidence(frame)
+        frame["risk_alert_candidates"] = (
+            select_recall_priority_candidates(
+                frame["fused_evidence"]
+            )
+        )
         
     return adapted
 
@@ -59,7 +65,7 @@ def build_assessment_requests(payload: dict) -> list[dict]:
         source = frame["source"]
         detections = []
 
-        for item in frame["fused_evidence"]:
+        for item in frame["risk_alert_candidates"]:
             detection = item.get("detection") or {}
 
             context = build_evidence_context(frame, item)
