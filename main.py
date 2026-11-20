@@ -73,6 +73,10 @@ def health():
 
 @app.post("/assess")
 def assess(payload: AssessmentRequest):
+    print(
+        f"[/assess] 입력 위험 후보 수: {len(payload.detections)}",
+        flush=True
+    )
     assessments = []
 
     for detection in payload.detections:
@@ -245,6 +249,11 @@ def assess(payload: AssessmentRequest):
             "retrieved_law_candidates": law_candidates,
         }
 
+        print(
+            f"[Qwen 호출] hazard={detection.hazard}, "
+            f"bbox={detection.bbox}",
+            flush=True
+        )
         report = generate_assessment(
             scene=scene,
             results=(
