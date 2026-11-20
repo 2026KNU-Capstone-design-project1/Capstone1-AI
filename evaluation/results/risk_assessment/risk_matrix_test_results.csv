@@ -1,0 +1,43 @@
+﻿case_id,hazard_type,violation_status,worker_exposure,expected_consequence,evidence_sufficient,expected_score,actual_score,expected_level,actual_level,expected_review,actual_review,passed
+M001,guardrail,위반,controlled,minor,True,1,1,하,하,False,False,True
+M002,guardrail,위반,controlled,serious,True,2,2,하,하,False,False,True
+M003,guardrail,위반,controlled,fatal,True,3,3,중,중,False,False,True
+M004,guardrail,위반,possible,minor,True,2,2,하,하,False,False,True
+M005,guardrail,위반,possible,serious,True,4,4,중,중,False,False,True
+M006,guardrail,위반,possible,fatal,True,6,6,상,상,False,False,True
+M007,guardrail,위반,direct,minor,True,3,3,중,중,False,False,True
+M008,guardrail,위반,direct,serious,True,6,6,상,상,False,False,True
+M009,guardrail,위반,direct,fatal,True,9,9,상,상,False,False,True
+M010,opening,위반,controlled,minor,True,1,1,하,하,False,False,True
+M011,opening,위반,controlled,serious,True,2,2,하,하,False,False,True
+M012,opening,위반,controlled,fatal,True,3,3,중,중,False,False,True
+M013,opening,위반,possible,minor,True,2,2,하,하,False,False,True
+M014,opening,위반,possible,serious,True,4,4,중,중,False,False,True
+M015,opening,위반,possible,fatal,True,6,6,상,상,False,False,True
+M016,opening,위반,direct,minor,True,3,3,중,중,False,False,True
+M017,opening,위반,direct,serious,True,6,6,상,상,False,False,True
+M018,opening,위반,direct,fatal,True,9,9,상,상,False,False,True
+M019,work_platform,위반,controlled,minor,True,1,1,하,하,False,False,True
+M020,work_platform,위반,controlled,serious,True,2,2,하,하,False,False,True
+M021,work_platform,위반,controlled,fatal,True,3,3,중,중,False,False,True
+M022,work_platform,위반,possible,minor,True,2,2,하,하,False,False,True
+M023,work_platform,위반,possible,serious,True,4,4,중,중,False,False,True
+M024,work_platform,위반,possible,fatal,True,6,6,상,상,False,False,True
+M025,work_platform,위반,direct,minor,True,3,3,중,중,False,False,True
+M026,work_platform,위반,direct,serious,True,6,6,상,상,False,False,True
+M027,work_platform,위반,direct,fatal,True,9,9,상,상,False,False,True
+M028,guardrail,관측상 정상,direct,fatal,True,,,평가 제외,평가 제외,False,False,True
+M029,guardrail,위반 의심,direct,fatal,True,,,미확정,미확정,True,True,True
+M030,guardrail,미확인,direct,fatal,True,,,미확정,미확정,True,True,True
+M031,opening,관측상 정상,direct,fatal,True,,,평가 제외,평가 제외,False,False,True
+M032,opening,위반 의심,direct,fatal,True,,,미확정,미확정,True,True,True
+M033,opening,미확인,direct,fatal,True,,,미확정,미확정,True,True,True
+M034,work_platform,관측상 정상,direct,fatal,True,,,평가 제외,평가 제외,False,False,True
+M035,work_platform,위반 의심,direct,fatal,True,,,미확정,미확정,True,True,True
+M036,work_platform,미확인,direct,fatal,True,,,미확정,미확정,True,True,True
+M037,guardrail,위반,direct,fatal,False,,,미확정,미확정,True,True,True
+M038,opening,위반,direct,fatal,False,,,미확정,미확정,True,True,True
+M039,work_platform,위반,direct,fatal,False,,,미확정,미확정,True,True,True
+M040,guardrail,위반,,fatal,True,,,미확정,미확정,True,True,True
+M041,opening,위반,,fatal,True,,,미확정,미확정,True,True,True
+M042,work_platform,위반,,fatal,True,,,미확정,미확정,True,True,True

@@ -1,0 +1,8 @@
+test_id,opening_detected,visibility,cover_present,guardrail_present,protection_complete,violation_suspected,expected_status
+O001,true,clear,true,false,true,false,관측상 정상
+O002,true,clear,false,false,false,false,위반
+O003,true,clear,true,true,false,false,위반
+O004,true,clear,true,true,false,true,위반 의심
+O005,true,partial,,,,false,미확인
+O006,true,clear,true,false,,false,미확인
+O007,false,clear,false,false,false,false,관측상 정상

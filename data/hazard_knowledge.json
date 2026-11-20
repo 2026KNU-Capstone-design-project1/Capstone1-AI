@@ -1,0 +1,90 @@
+
+{
+  "version": "1.0",
+  "items": [
+    {
+      "hazard_code": "N-20",
+      "hazard": "이동식 크레인 작업 시 철제 인양박스 미사용",
+      "keywords": [
+        "이동식 크레인",
+        "항공마대",
+        "철제 인양박스",
+        "인양용기",
+        "낙하 위험"
+      ],
+      "accident_type": "낙하·비래",
+      "safety_criteria": [
+        "인양 대상 자재에 적합한 인양용기 및 인양방법을 확인한다.",
+        "인양 중 자재가 이탈하거나 낙하할 가능성이 있는지 확인한다."
+      ],
+      "improvement": [
+        "현장에서 실제 사용 중인 인양용기의 적합성을 확인한다.",
+        "부적합한 인양방법이 확인되면 적합한 인양용기와 방법으로 변경한다."
+      ],
+      "additional_checks": [
+        "실제 인양 작업이 진행 중인지",
+        "인양용기 및 인양방법이 자재 특성에 적합한지",
+        "인양 중 자재의 이탈·낙하 방지조치가 마련되어 있는지"
+      ],
+      "legal_basis": null,
+      "source_type": "draft_guidance",
+      "verification_status": "unverified"
+    },
+    {
+      "hazard_code": "N-33",
+      "hazard": "용접기 옆 소화기 미배치",
+      "keywords": [
+        "용접기",
+        "소화기",
+        "화재",
+        "소화설비",
+        "화기작업"
+      ],
+      "accident_type": "화재·폭발",
+      "safety_criteria": [
+        "용접·화기작업 구역에 필요한 소화설비가 적절히 배치되어 있는지 확인한다.",
+        "작업 장소의 화재 예방조치와 소화설비 접근 가능 여부를 확인한다."
+      ],
+      "improvement": [
+        "현장에 소화설비가 실제로 비치되어 있는지 확인한다.",
+        "필요한 소화설비가 없는 경우 적절한 소화설비를 배치한 뒤 작업 조건을 재확인한다."
+      ],
+      "additional_checks": [
+        "영상 밖이나 사각지대에 소화기가 있는지",
+        "실제 용접·화기작업이 진행 중인지",
+        "작업 구역의 화재 예방조치가 적절한지"
+      ],
+      "legal_basis": null,
+      "source_type": "draft_guidance",
+      "verification_status": "unverified"
+    },
+    {
+      "hazard_code": "N-50",
+      "hazard": "지게차 운전자 시야 초과 자재 과적재",
+      "keywords": [
+        "지게차",
+        "운전자 시야",
+        "자재 적재",
+        "과적재",
+        "충돌 위험"
+      ],
+      "accident_type": "충돌·협착",
+      "safety_criteria": [
+        "지게차 운전자의 전방 시야가 적재물에 의해 제한되는지 확인한다.",
+        "적재 상태와 운행 방법이 현장 안전조건에 적합한지 확인한다."
+      ],
+      "improvement": [
+        "적재물의 높이와 운전자 시야 확보 여부를 확인한다.",
+        "운전자 시야가 제한되는 경우 안전한 적재 및 운행 방법을 검토한다."
+      ],
+      "additional_checks": [
+        "운전자의 실제 시야가 가려지는지",
+        "적재물의 높이와 고정 상태가 적절한지",
+        "지게차가 실제로 운행 중인지"
+      ],
+      "legal_basis": null,
+      "source_type": "draft_guidance",
+      "verification_status": "unverified"
+    }
+  ]
+}
