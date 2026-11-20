@@ -143,6 +143,13 @@ def box_relation(a, b, aspect):
     }
 
 
+def union_bbox(boxes):
+    """박스들(x, y, w, h · 0~1)을 모두 감싸는 박스 → detections 의 bbox 와 같은 형식 {x, y, width, height}."""
+    x0, y0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    x1, y1 = max(b[0] + b[2] for b in boxes), max(b[1] + b[3] for b in boxes)
+    return {"x": round(x0, 4), "y": round(y0, 4), "width": round(x1 - x0, 4), "height": round(y1 - y0, 4)}
+
+
 def continuity(objects):
     """같은 연속 객체(난간 · 펜스 · 방지망)가 여러 조각이면 가로 방향 끊김을 본다."""
     out = []
@@ -282,6 +289,8 @@ def analyze(objects, aspect=16 / 9, people="none", hazard_codes=()):
                                      "objects": [a["id"], b["id"]], "gap": gap[(a["id"], b["id"])]})
     for f in findings:
         f["hazard"] = HAZARDS[f["code"]][0] if f["code"] in HAZARDS else f["code"]
+        # 화면에 그릴 박스: 규칙에 걸린 객체(결여는 기준 객체, 위험 인접은 두 객체)를 감싸는 영역
+        f["bbox"] = union_bbox([objs[i]["bbox"] for i in f["objects"]])
     return {"objects": objs, "relations": relations, "continuity": continuity(objs), "findings": findings,
             **evaluate(objs, findings, gap, hazard_codes)}
 

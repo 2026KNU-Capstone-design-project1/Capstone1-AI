@@ -323,7 +323,9 @@ def draw(image_path, detections, out_path):
         x0, y0 = b["x"] * W, b["y"] * H
         x1, y1 = x0 + b["width"] * W, y0 + b["height"] * H
         dr.rectangle([x0, y0, x1, y1], outline=(255, 0, 0), width=6)
-        label = f'{det["hazard"]} {det["confidence"]:.2f}'
+        # 공간관계 규칙으로 찾은 위험은 confidence 가 없다 → "(규칙)" 으로 표시
+        label = (f'{det["hazard"]} {det["confidence"]:.2f}' if det.get("confidence") is not None
+                 else f'{det["hazard"]} (규칙)')
         tx, ty = x0, max(0, y0 - size - 12)
         dr.rectangle(dr.textbbox((tx, ty), label, font=font), fill=(255, 0, 0))
         dr.text((tx, ty), label, fill=(255, 255, 255), font=font)

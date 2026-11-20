@@ -46,12 +46,39 @@ def load_frame_map(path):
     return {int(k): v for k, v in data.items()}
 
 
+# 규칙 보완(YOLO 가 못 잡은 장면)에 쓸 객체의 최소 신뢰도.
+# 객체 모델 기본 기준(0.25)으로는 로고 · 드럼통 등을 산소절단기 · 난로로 착각한 오경보가 많아서,
+# 보완 경로에서만 위험 상태 탐지와 같은 0.5 를 요구한다 (YOLO 장면의 relations 는 그대로 0.25).
+RULE_MIN_CONF = 0.5
+
+
+def rule_detections(relations, min_conf=RULE_MIN_CONF):
+    """공간관계 규칙이 '위험'으로 판단한 항목 → 사건을 만들기 위한 탐지 결과.
+
+    규칙에 걸린 객체가 모두 min_conf 이상일 때만 사용한다.
+    YOLO 박스가 아니므로 confidence 는 None, source 는 "spatial".
+    결과 JSON 의 detections 에는 넣지 않고 사건 묶기 · 대표 장면 이미지에만 쓴다.
+    """
+    if not relations:
+        return []
+    conf = {o["id"]: o.get("confidence", 1.0) for o in relations["objects"]}
+    return [{"hazard": f["hazard"], "bbox": f["bbox"], "confidence": None, "source": "spatial", "rule": f["type"]}
+            for f in relations["findings"]
+            if f["status"] == "위험" and all(conf[i] >= min_conf for i in f["objects"])]
+
+
 def find_events(cap, fps, detector, frame_map, interval_ms, gap_ms):
     """영상을 훑으며 위험 사건 목록을 만든다.
 
     사건 = 같은 hazard 가 gap_ms 이내로 계속 잡힌 구간.
     사건마다 confidence 가 가장 높은 프레임을 대표 장면으로 고른다.
+
+    C 정책 (YOLO 우선 · 공간관계 보완):
+      YOLO 위험 상태 모델이 아무것도 못 잡은 프레임은 객체 탐지 + 공간관계 규칙을 한 번 더 돌리고,
+      규칙이 위험을 찾으면 "규칙 사건"으로 묶는다 (객체 모델이 있을 때만).
+      규칙 사건은 confidence 가 없으므로 처음 잡힌 프레임을 대표 장면으로 쓴다.
     """
+    use_rules = isinstance(detector, YoloDetector) and detector.objects_model is not None
     step = max(1, round(fps * interval_ms / 1000))
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     open_events = {}  # hazard → 진행 중인 사건
@@ -72,24 +99,38 @@ def find_events(cap, fps, detector, frame_map, interval_ms, gap_ms):
 
         time_ms = round(index / fps * 1000)
         detections = detector.detect(frame, image_name=frame_map.get(index))
+        relations = None
+        if not detections and use_rules:
+            # YOLO 가 못 잡은 장면 → 공간관계 규칙으로 보완 (C 정책)
+            relations = detector.relations(frame)
+            detections = rule_detections(relations)
+            if detections:
+                # 기준 미달 객체로 나온 '위험' 판단은 결과에서 뺀다 (위험성평가 쪽에서 경보 후보가 되지 않도록)
+                kept = {(d["hazard"], tuple(d["bbox"].values())) for d in detections}
+                relations = {**relations, "findings": [
+                    f for f in relations["findings"]
+                    if f["status"] != "위험" or (f["hazard"], tuple(f["bbox"].values())) in kept]}
 
         for det in detections:
             hazard = det["hazard"]
-            ev = open_events.get(hazard)
+            key = (det.get("source", "yolo"), hazard)  # YOLO 사건과 규칙 사건은 따로 묶는다
+            ev = open_events.get(key)
             if ev is None or time_ms - ev["last_ms"] > gap_ms:
-                ev = {"hazard": hazard, "start_ms": time_ms, "best": None, "frames": []}
-                open_events[hazard] = ev
+                ev = {"hazard": hazard, "source": key[0], "start_ms": time_ms, "best": None, "frames": []}
+                open_events[key] = ev
                 events.append(ev)
             ev["last_ms"] = time_ms
             ev["frames"].append({"frame_index": index, "frame_time_ms": time_ms,
                                  "bbox": det["bbox"], "confidence": det["confidence"]})
-            if ev["best"] is None or det["confidence"] > ev["best"]["det"]["confidence"]:
+            # 규칙 사건은 confidence 가 없으므로 처음 잡힌 프레임을 대표로 유지한다
+            if ev["best"] is None or (det["confidence"] is not None
+                                      and det["confidence"] > ev["best"]["det"]["confidence"]):
                 old = ev["best"] and ev["best"]["frame_index"]
                 # 예전 대표 프레임을 다른 사건이 안 쓰면 메모리에서 지운다
                 if old is not None and not any(
                         e is not ev and e["best"] and e["best"]["frame_index"] == old for e in events):
                     frames.pop(old, None)
-                ev["best"] = {"frame_index": index, "frame_time_ms": time_ms, "det": det}
+                ev["best"] = {"frame_index": index, "frame_time_ms": time_ms, "det": det, "relations": relations}
                 frames[index] = frame
 
         if index and index % (step * 50) == 0:
@@ -126,14 +167,17 @@ def analyze_video(video_path, video_id, detector, out_dir=Path("output"), interv
     by_frame = {}
     for ev in events:
         b = ev["best"]
-        by_frame.setdefault(b["frame_index"], {"frame_time_ms": b["frame_time_ms"], "dets": []})
+        entry = by_frame.setdefault(b["frame_index"], {"frame_time_ms": b["frame_time_ms"], "dets": [],
+                                                       "rule_dets": [], "relations": None})
         # 대표 탐지 결과에 사건 구간과 프레임 리스트를 붙인다
-        by_frame[b["frame_index"]]["dets"].append({
-            **b["det"],
-            "start_time_ms": ev["start_ms"],
-            "end_time_ms": ev["last_ms"],
-            "frames": ev["frames"],
-        })
+        item = {**b["det"], "start_time_ms": ev["start_ms"], "end_time_ms": ev["last_ms"], "frames": ev["frames"]}
+        if ev["source"] == "spatial":
+            # 규칙으로만 찾은 위험 → detections 에는 넣지 않고, 근거는 relations.findings 로 보낸다
+            # (위험성평가 쪽 근거 융합에서 spatial_only 로 처리됨)
+            entry["rule_dets"].append(item)
+            entry["relations"] = b["relations"]
+        else:
+            entry["dets"].append(item)
 
     frame_dir = Path(out_dir) / "frames" / f"video_{video_id}"
     frame_dir.mkdir(parents=True, exist_ok=True)
@@ -144,10 +188,10 @@ def analyze_video(video_path, video_id, detector, out_dir=Path("output"), interv
         raw_path = frame_dir / f"frame_{frame_index}.jpg"
         boxed_path = frame_dir / f"frame_{frame_index}_boxed.jpg"
         cv2.imwrite(str(raw_path), frames[frame_index])
-        draw(raw_path, info["dets"], boxed_path)
+        draw(raw_path, info["dets"] + info["rule_dets"], boxed_path)
         # 이미지 업로드(S3) 방식이 정해지기 전까지 image_url 은 로컬 경로 (ai_server 는 서버 주소)
-        # 공간관계는 대표 장면에서만 계산한다 (객체 모델이 있을 때)
-        relations = detector.relations(frames[frame_index], info["dets"]) if use_yolo else None
+        # 공간관계: 규칙 사건 장면은 이미 계산한 결과를 쓰고, YOLO 사건 장면은 여기서 계산한다 (객체 모델이 있을 때)
+        relations = info["relations"] or (detector.relations(frames[frame_index], info["dets"]) if use_yolo else None)
         results.append(build_result(
             info["dets"], "video", image_url=image_url(raw_path) if image_url else str(raw_path),
             video_id=video_id, frame_index=frame_index, frame_time_ms=info["frame_time_ms"],
