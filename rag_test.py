@@ -1,3 +1,9 @@
+import os
+from ollama import Client
+
+ollama_client = Client(
+    host=os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+)
 import json
 import ollama
 import time
@@ -373,7 +379,7 @@ def generate_assessment(scene, results, return_json=False):
     print("Qwen 호출 시작", flush=True)
     start = time.perf_counter()
 
-    response = ollama.chat(
+    response = ollama_client.chat(
         model="qwen3:4b",
         messages=[
             {"role": "system", "content": system_prompt},
