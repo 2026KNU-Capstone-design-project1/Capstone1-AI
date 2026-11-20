@@ -68,13 +68,27 @@ def build_assessment_requests(payload: dict) -> list[dict]:
         for item in frame["risk_alert_candidates"]:
             detection = item.get("detection") or {}
 
+            # 규칙(공간관계) 후보는 YOLO 박스가 없으므로 spatial_findings 의 bbox 를 쓴다.
+            # 이 bbox 는 규칙에 걸린 객체를 감싸는 영역이다
+            # (결여: 기준 객체, 위험 인접: 두 객체, 상태 객체: 그 객체 · x, y, width, height 0~1 정규화).
+            spatial_bbox = next(
+                (
+                    f.get("bbox")
+                    for f in item.get("spatial_findings") or []
+                    if f.get("status") == "위험" and f.get("bbox")
+                ),
+                None,
+            )
+
             context = build_evidence_context(frame, item)
 
             detections.append({
                 "hazard": item["hazard"],
                 "location": detection.get("location"),
                 "evidence": detection.get("evidence"),
-                "bbox": detection.get("bbox"),
+                "bbox": detection.get("bbox") or spatial_bbox,
+                # 규칙 후보의 0.0 은 '신뢰도 0' 이 아니라 'YOLO confidence 미제공' 의미
+                # (출처는 evidence_context.risk_alert_source 로 구분)
                 "confidence": detection.get("confidence", 0.0),
                 "hazard_type": None,
                 "rule_features": None,
