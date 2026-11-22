@@ -18,7 +18,10 @@ AI 서버 (FastAPI)
 
 응답 형식 (영상 · 사진 동일)
   {"video_id" 또는 "photo_id", "count": 결과 수, "elapsed_ms": 걸린 시간,
-   "results": [AI 결과 JSON, ...]}   ← 위험 장면 하나당 JSON 하나
+   "results": [AI 결과 JSON, ...],              ← 위험 장면 하나당 JSON 하나 (프론트 표시용)
+   "assessment_requests": [/assess 요청, ...]}  ← 백엔드가 위험성평가 /assess 로 그대로 보내면 되는 요청
+                                                  (detection_adapter 로 C 정책 적용: YOLO 우선 · 없으면 공간관계 규칙)
+  변환에 실패하면 assessment_requests 는 [] 이고 assessment_error 에 이유가 들어간다.
 
   AI 결과 JSON (기본):
     {source_type, photo_id, video_id, frame_index, frame_time_ms, image_url,
@@ -61,6 +64,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from detect_video import analyze_video
+from detection_adapter import build_assessment_requests
 from detector import DEFAULT_SITE_ID, DEFAULT_SITE_NAME, YoloDetector, build_result, draw
 from send_result import spec_only as to_spec_only
 
@@ -229,6 +233,20 @@ def assessment_args(info):
             ("assessment_id", "site_id", "site_name", "work_name", "work_type", "work_location")}}
 
 
+def make_assessment_requests(results, label):
+    """AI 결과 → 위험성평가 /assess 요청 목록 (세희 detection_adapter, C 정책 적용).
+
+    spec_only · include_relations 로 정보를 빼기 전의 결과로 만든다
+    (규칙으로만 찾은 위험은 relations.findings 에만 있으므로).
+    변환에 실패해도 AI 결과는 그대로 돌려주도록 오류를 잡아 기록한다.
+    """
+    try:
+        return build_assessment_requests({"results": results}), None
+    except Exception as e:  # 형식 문제 등
+        print(f"  [{label}] ⚠️ assessment_requests 변환 실패: {type(e).__name__}: {e}")
+        return [], f"{type(e).__name__}: {e}"
+
+
 def finish(results, info):
     """요청 옵션에 따라 추가 정보를 뺀다."""
     if info.spec_only:
@@ -248,10 +266,16 @@ def run_video(path, video_id, info, request, interval_ms=500, gap_ms=2000):
                 **assessment_args(info))
     except ValueError as e:
         raise HTTPException(400, str(e))
+    requests_, error = make_assessment_requests(results, f"video {video_id}")
     results = finish(results, info)
     elapsed = round((time.perf_counter() - start) * 1000)
-    print(f"  [video {video_id}] 위험 사건 {len(events)}개 → 결과 {len(results)}개 ({elapsed / 1000:.1f}초)")
-    return {"video_id": video_id, "count": len(results), "elapsed_ms": elapsed, "results": results}
+    print(f"  [video {video_id}] 위험 사건 {len(events)}개 → 결과 {len(results)}개, "
+          f"/assess 요청 {len(requests_)}개 ({elapsed / 1000:.1f}초)")
+    out = {"video_id": video_id, "count": len(results), "elapsed_ms": elapsed, "results": results,
+           "assessment_requests": requests_}
+    if error:
+        out["assessment_error"] = error
+    return out
 
 
 def parse_id(value):
@@ -329,10 +353,15 @@ def predict_photo(request: Request, file: UploadFile = File(...), photo_id: Opti
         raise HTTPException(400, f"사진을 분석하지 못했어요: {type(e).__name__}: {e}")
     result = build_result(detections, "photo", image_url=image_url_maker(request)(raw), photo_id=pid,
                           relations=relations, **assessment_args(info))
+    requests_, error = make_assessment_requests([result], f"photo {pid}")
     result = finish([result], info)[0]
     elapsed = round((time.perf_counter() - start) * 1000)
-    print(f"  [photo {pid}] 위험 {len(detections)}개 ({elapsed / 1000:.1f}초)")
-    return {"photo_id": pid, "count": 1, "elapsed_ms": elapsed, "results": [result]}
+    print(f"  [photo {pid}] 위험 {len(detections)}개, /assess 요청 {len(requests_)}개 ({elapsed / 1000:.1f}초)")
+    out = {"photo_id": pid, "count": 1, "elapsed_ms": elapsed, "results": [result],
+           "assessment_requests": requests_}
+    if error:
+        out["assessment_error"] = error
+    return out
 
 
 def main():

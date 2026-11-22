@@ -1,26 +1,3 @@
-"""
-라벨 json → YOLO txt 변환
-
-split_data.py 로 나눈 dataset/labels/{train,val,test}/*.json 을 YOLO 학습용 txt 로 바꾼다.
-  - N 코드 (시설물 위험)  : bbox 를 "클래스번호 x중심 y중심 너비 높이" (0~1) 로 저장
-  - Y 코드 (정상)         : 빈 txt → 정상 장면으로 학습해 오탐을 줄인다 (--no-normal 이면 제외)
-  - 탐지 범위 밖 코드      : SO·C (작업자 행동 등), detector.py 의 HAZARDS 표에 없는 N 코드는 학습에서 제외
-
-txt 는 json 옆(dataset/labels/<split>/)에 같은 이름으로 만든다.
-학습에 쓸 사진 목록(yolo_train.txt 등)과 data.yaml 을 dataset/ 에 만든다.
-  → 범위 밖 사진은 목록에 없으므로 YOLO 가 배경 사진으로 잘못 쓰지 않는다.
-
-클래스 방식
-  - 기본    : 세부 코드 (N-03 덮개 이탈, N-04 덮개 미설치 ...) — 위험명·방호 상태를 바로 알 수 있음
-  - --group : 위험 그룹 5개 (추락방지 시설, 비계·가설구조물, 낙하방지 시설, 건설장비, 화재 예방)
-  다시 실행하면 txt 와 data.yaml 을 새 방식으로 덮어쓴다.
-
-사용법:
-    python convert_to_yolo.py dataset
-    python convert_to_yolo.py dataset --group          # 위험 그룹으로
-    python convert_to_yolo.py dataset --no-normal      # 정상(Y) 사진 빼고
-    python convert_to_yolo.py dataset --draw 20        # 변환 결과 20장을 박스 그려서 확인
-"""
 import argparse
 import json
 import random

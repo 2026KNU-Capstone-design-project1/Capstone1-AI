@@ -1,25 +1,3 @@
-"""
-탐지기 (AI의 "눈")
-
-사진 한 장을 넣으면 위험 목록을 돌려준다.
-    detect(frame, image_name) -> [{"hazard", "location", "evidence", "bbox": {x, y, width, height}, "confidence"}]
-
-build_result() 로 AI 결과 JSON (source_type · video_id · frame_* · image_url · detections · relations) 을 만든다.
-(--full 이면 assessment_id · site_info · work_info 를 붙인 위험성평가 전체 형식)
-
-탐지기 두 가지 (detect() 형식은 같다)
-  - YoloDetector  : 학습한 YOLO 모델(best.pt)로 사진을 직접 보고 위험을 찾는다 (실제 사용)
-                    객체 탐지 모델(--objects-weights)도 주면 객체 간 공간관계(relations)를 함께 계산한다
-  - DummyDetector : AI Hub 라벨 json 에 적힌 정답 위치를 그대로 돌려준다 (모델 없이 테스트용)
-
-bbox 는 0~1 비율 (x, y = 왼쪽 위 모서리).
-
-사용법 (사진 한 장 테스트):
-    python detector.py 사진.jpg --weights runs/yolo11n/weights/best.pt --draw 결과.jpg
-    python detector.py 사진.jpg --weights runs/yolo11n/weights/best.pt --objects-weights runs/objects/weights/best.pt
-    python detector.py 사진.jpg --labels 라벨폴더                     # 더미 탐지기
-    전체 형식: --full --site-id SITE-001 --site-name "건설 현장 A" --work-name "굴착 작업" ...
-"""
 import argparse
 import json
 from pathlib import Path

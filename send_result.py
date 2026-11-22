@@ -1,24 +1,3 @@
-"""
-백엔드로 결과 보내기
-
-detector.py / detect_video.py 가 만든 결과 JSON 을 백엔드로 POST 한다.
-  - 보내기 전에 형식이 맞는지 검사한다 (틀리면 보내지 않음)
-    AI 출력 형식(source_type · video_id · frame_* · image_url · detections · relations)과
-    위험성평가 전체 형식(assessment_id · site_info · work_info · source · detections) 둘 다 검사 가능
-  - 서버가 꺼져 있거나 5xx/429 면 몇 번 다시 시도한다
-  - 4xx (형식 오류 등) 는 다시 보내도 같으니 재시도하지 않고 서버 메시지를 보여준다
-
-백엔드 주소는 코드에 적지 않는다. 우선순위: --url > 환경변수 BACKEND_URL > 기본값(localhost:8000, mock_server)
-
-사용법:
-    python send_result.py output/results/video_3.json
-    python send_result.py output/results/                       # 폴더 안 json 전부
-    python send_result.py output/results/video_3.json --batch   # 리스트를 한 번에 보내기
-    python send_result.py output/results/video_3.json --dry-run # 검사만, 전송 안 함
-    python send_result.py output/results/video_3.json --spec-only  # 사건 구간 정보(start/end/frames) 빼기
-    python send_result.py output/results/video_3.json --no-relations  # 공간관계 빼기
-    BACKEND_URL=http://192.168.0.10:8080 python send_result.py output/results/video_3.json
-"""
 import argparse
 import json
 import os
