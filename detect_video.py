@@ -1,33 +1,3 @@
-"""
-영상 분석 & 위험 장면 추출
-
-영상을 처음부터 끝까지 읽으면서 위험이 있는 장면만 골라낸다.
-  1. 일정 간격(--interval-ms)마다 프레임을 읽는다
-  2. detector 로 위험을 확인한다
-  3. 같은 위험이 연속으로 잡히면 하나의 "사건"으로 묶고 대표 장면 1장만 남긴다
-  4. 대표 장면을 jpg 로 저장한다 (원본 + 박스 그린 버전)
-  5. AI 출력 형식 JSON 으로 저장한다 (대표 장면마다 1개)
-     - frame_index / frame_time_ms / image_url : 가장 잘 잡힌 대표 프레임
-     - relations : 객체 간 공간관계 (--objects-weights 를 줄 때)
-     - (--full 이면 assessment_id / site_info / work_info 를 붙인 위험성평가 전체 형식)
-     - (명세 밖 추가) 위험마다 start_time_ms / end_time_ms : 사건이 처음·마지막으로 잡힌 시각
-     - (명세 밖 추가) 위험마다 frames : 사건 동안 잡힌 프레임 리스트 (번호, 시간, 박스, 신뢰도)
-       → 명세 필드만 보내려면 send_result.py --spec-only
-
---weights 를 주면 학습한 YOLO 모델로 실제 영상을 분석한다 (실제 사용).
---objects-weights 도 주면 대표 장면마다 객체 간 공간관계(relations)를 JSON 에 붙인다.
-
-더미 탐지기(--labels)는 프레임이 어떤 AI Hub 사진인지 알아야 정답을 찾을 수 있어서
-프레임 매핑 파일(<영상이름>.frames.json, make_test_video.py 가 만듦)이 필요하다.
-
-사용법:
-    python detect_video.py 영상.mp4 --video-id 3 --weights runs/yolo11n/weights/best.pt
-    python detect_video.py 영상.mp4 --video-id 3 --weights runs/yolo11n/weights/best.pt \\
-        --objects-weights runs/objects/weights/best.pt
-    python detect_video.py 영상.mp4 --video-id 3 --labels 라벨폴더       # 더미 탐지기
-    전체 형식: --full --site-id SITE-001 --site-name "건설 현장 A" --work-name "굴착 작업" \\
-        --work-type "시설물 안전 점검" --work-location "굴착부 주변" [--assessment-id RA-2026-001]
-"""
 import argparse
 import json
 from pathlib import Path

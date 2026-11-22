@@ -1,24 +1,3 @@
-"""
-객체 라벨 → YOLO 객체 탐지 데이터
-
-공간관계 분석에 쓸 객체(시설물 · 위험 대상 · 장비 · 공구 · 자재 · 안전보조장비 · 사람)를 찾는
-YOLO 모델의 학습 데이터를 만든다. split_data.py 로 나눈 train / val / test 를 그대로 쓴다.
-  - AI Hub 라벨의 객체 다각형(SO · DO · WO) → 감싸는 박스 → YOLO txt
-  - 위험 상태 모델(dataset/labels/*.txt)과 섞이지 않도록 dataset/objects/ 에 따로 만든다
-  - 사진은 복사하지 않고 dataset/objects/images/<split> → dataset/images/<split> 바로가기(심볼릭 링크)
-  - 사람(작업자 · 신호수)도 기본으로 학습한다 → 공간관계에서 쓸지는 spatial_relations.py --people 로 결정
-    (사람을 아예 빼려면 --no-people)
-
-결과: dataset/objects/
-  labels/<split>/*.txt     객체 라벨
-  yolo_<split>.txt         사진 목록
-  data.yaml                학습 설정 (train_yolo.py --data dataset/objects/data.yaml)
-
-사용법:
-    python convert_objects_to_yolo.py dataset
-    python convert_objects_to_yolo.py dataset --no-people
-    python convert_objects_to_yolo.py dataset --draw 20     # 박스 그려서 확인
-"""
 import argparse
 import os
 import random
