@@ -1,9 +1,0 @@
-language: ko-KR
-
-reviews:
-  profile: assertive
-  high_level_summary: false
-  auto_review:
-    enabled: true
-    base_branches:
-      - "^dev$"
